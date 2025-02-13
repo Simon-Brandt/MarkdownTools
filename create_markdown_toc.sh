@@ -83,6 +83,18 @@ if [[ -z "${in_file}" ]]; then
     error_message="You must give the input file as positional argument."
     printf 'Error: %s\n' "${error_message}"
     exit 1
+elif [[ ! -e "${in_file}" ]]; then
+    error_message="The input file does not exist."
+    printf 'Error: %s\n' "${error_message}"
+    exit 1
+elif [[ ! -f "${in_file}" ]]; then
+    error_message="The input file is not a regular file."
+    printf 'Error: %s\n' "${error_message}"
+    exit 1
+elif [[ ! -r "${in_file}" ]]; then
+    error_message="The input file is not readable."
+    printf 'Error: %s\n' "${error_message}"
+    exit 1
 elif [[ "${in_file}" == "-" ]]; then
     if [[ "${in_place}" == true ]]; then
         error_message="In-place operation on STDIN (-) is impossible."
