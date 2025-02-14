@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-02-12
+# Last Modification: 2025-02-14
 
 # Usage:
 # bash create_markdown_toc \
@@ -131,13 +131,7 @@ prev_line=""
 mapfile -t lines < "${in_file}"
 for i in "${!lines[@]}"; do
     line="${lines[i]}"
-    if [[ "${is_indented_code_block}" == true ]]; then
-        # The line lies within an indented code block and may only end
-        # it by four leading spaces.
-        if [[ "${line}" == "    "* ]]; then
-            is_indented_code_block=false
-        fi
-    elif [[ "${is_fenced_code_block_backtick}" == true ]]; then
+    if [[ "${is_fenced_code_block_backtick}" == true ]]; then
         # The line lies within a fenced code block and may only end it
         # by three backticks.
         if [[ "${line}" == "\`\`\`"* ]]; then
@@ -149,15 +143,21 @@ for i in "${!lines[@]}"; do
         if [[ "${line}" == "~~~"* ]]; then
             is_fenced_code_block_tilde=false
         fi
-    elif [[ "${line}" == "    "* ]]; then
-        # The line starts an indented code block.
-        is_indented_code_block=true
+    elif [[ "${is_indented_code_block}" == true ]]; then
+        # The line lies within an indented code block and may only end
+        # it by less than four leading spaces.
+        if [[ "${line}" != "    "* ]]; then
+            is_indented_code_block=false
+        fi
     elif [[ "${line}" == "\`\`\`"* ]]; then
         # The line starts a fenced code block using backticks.
         is_fenced_code_block_backtick=true
     elif [[ "${line}" == "~~~"* ]]; then
         # The line starts a fenced code block using tildes.
         is_fenced_code_block_tilde=true
+    elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
+        # The line starts an indented code block.
+        is_indented_code_block=true
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a header, starting with hashmarks, followed by at
         # least one space.
