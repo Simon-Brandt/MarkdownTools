@@ -17,6 +17,7 @@ shopt -s extglob
 in_file=""
 out_file=""
 in_place=false
+excluded_levels=""
 while (( "$#" > 0 )); do
     case "$1" in
         -i|--in-place)
@@ -52,6 +53,34 @@ while (( "$#" > 0 )); do
             out_file="${out_file#=}"
             if [[ -z "${out_file}" ]]; then
                 error_message="The option -o|--out-file requires a value."
+                printf 'Error: %s\n' "${error_message}"
+                exit 1
+            fi
+            shift
+            ;;
+        -e|--exclude)
+            excluded_levels="${2:-}"
+            if [[ -z "${excluded_levels}" ]]; then
+                error_message="The option -e|--exclude requires a value."
+                printf 'Error: %s\n' "${error_message}"
+                exit 1
+            fi
+            shift 2
+            ;;
+        -e*)
+            excluded_levels="${1#-o}"
+            if [[ -z "${excluded_levels}" ]]; then
+                error_message="The option -e|--exclude requires a value."
+                printf 'Error: %s\n' "${error_message}"
+                exit 1
+            fi
+            shift
+            ;;
+        --exclude=*)
+            excluded_levels="${1#--out-file}"
+            excluded_levels="${excluded_levels#=}"
+            if [[ -z "${excluded_levels}" ]]; then
+                error_message="The option -e|--exclude requires a value."
                 printf 'Error: %s\n' "${error_message}"
                 exit 1
             fi
@@ -115,6 +144,18 @@ if [[ -n "${out_file}" && "${in_place}" == true ]]; then
     printf 'Error: %s\n' "${error_message}"
     exit 1
 fi
+
+# Get the excluded header levels and compute the included ones.
+included_levels=( )
+IFS="," read -r -a excluded_levels <<< "${excluded_levels}"
+for included_level in 1 2 3 4 5 6; do
+    for excluded_level in "${excluded_levels[@]}"; do
+        if [[ "${included_level}" == "${excluded_level}" ]]; then
+            continue 2
+        fi
+    done
+    included_levels+=("${included_level}")
+done
 
 # Extract the headers from the input file.  These may start with
 # hashmarks ("#") or can be underlined with equals signs ("=") or
@@ -187,18 +228,29 @@ done
 toc_lines=( )
 declare -A links
 for header in "${headers[@]}"; do
-    # Count the leading hashmarks in the header and convert them into
-    # two spaces each, except the first one, to create the required list
-    # item indentation per header level.  Since the printf format
-    # specification adds a space more than required, strip it from the
-    # indentation.
-    i=0
-    while [[ "${header:i:1}" == \# ]]; do
-        (( i++ ))
+    # Count the leading hashmarks in the header.  If the header level
+    # shall be excluded, skip it.
+    level=0
+    while [[ "${header:level:1}" == "#" ]]; do
+        (( level++ ))
     done
-    (( count = (i - 1) * 2 ))
-    printf -v indent '%*s ' "${count}" ""
-    indent="${indent::-1}- "
+
+    for excluded_level in "${excluded_levels[@]}"; do
+        if [[ "${level}" == "${excluded_level}" ]]; then
+            continue 2
+        fi
+    done
+
+    # Create the required list item indentation per header level.
+    for i in "${!included_levels[@]}"; do
+        if [[ "${level}" == "${included_levels[i]}" ]]; then
+            break
+        fi
+    done
+
+    (( count = i * 2 ))
+    printf -v indentation '%*s' "${count}" ""
+    indentation="${indentation}- "
 
     # Remove the leading and trailing spaces, and the leading hashmarks
     # and spaces following them from the title.
@@ -225,7 +277,7 @@ for header in "${headers[@]}"; do
     fi
 
     # Add the resultant line to the table of contents.
-    toc_lines+=("${indent}[${title}](#${link})")
+    toc_lines+=("${indentation}[${title}](#${link})")
 done
 
 # Join the table of contents lines by newline characters.
@@ -237,15 +289,18 @@ if [[ "${in_place}" == true ]]; then
     # lines, thereby replacing their contents (i.e., the previous table
     # of contents).  Finally, join the (now sparse) array of lines and
     # write it back to the input file.
-    toc_lines=("$(printf '%s\n' "${toc_lines[@]}")")
-    toc_lines[0]="${toc_lines[0]%\n}"
-    lines[toc_start]+=$'\n'
-    lines[toc_start]+="${toc_lines[0]}"
+    if [[ -n "${toc_lines[0]}" ]]; then
+        lines[toc_start]+=$'\n'
+        lines[toc_start]+="${toc_lines[0]}"
+    fi
+
     for (( i = toc_start + 1; i < toc_end; i++ )); do
         unset 'lines[i]'
     done
     printf '%s\n' "${lines[@]}" > "${in_file}"
 else
     # Write the lines to the output file.
-    printf '%s\n' "${toc_lines[@]}" > "${out_file}"
+    if [[ -n "${toc_lines[0]}" ]]; then
+        printf '%s\n' "${toc_lines[0]}"
+    fi > "${out_file}"
 fi
