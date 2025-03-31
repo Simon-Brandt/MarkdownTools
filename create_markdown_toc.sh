@@ -13,118 +13,24 @@
 # table of contents.
 
 # Read and parse the arguments.
-shopt -s extglob
-in_file=""
-out_file=""
-in_place=false
-excluded_levels=""
-while (( "$#" > 0 )); do
-    case "$1" in
-        -i|--in-place)
-            in_place=true
-            shift
-            ;;
-        -i*|--in-place*)
-            error_message="The option -i|--in-place is a flag and accepts no "
-            error_message+="value."
-            printf 'Error: %s\n' "${error_message}"
-            exit 1
-            ;;
-        -o|--out-file)
-            out_file="${2:-}"
-            if [[ -z "${out_file}" ]]; then
-                error_message="The option -o|--out-file requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift 2
-            ;;
-        -o*)
-            out_file="${1#-o}"
-            if [[ -z "${out_file}" ]]; then
-                error_message="The option -o|--out-file requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift
-            ;;
-        --out-file=*)
-            out_file="${1#--out-file}"
-            out_file="${out_file#=}"
-            if [[ -z "${out_file}" ]]; then
-                error_message="The option -o|--out-file requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift
-            ;;
-        -e|--exclude)
-            excluded_levels="${2:-}"
-            if [[ -z "${excluded_levels}" ]]; then
-                error_message="The option -e|--exclude requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift 2
-            ;;
-        -e*)
-            excluded_levels="${1#-o}"
-            if [[ -z "${excluded_levels}" ]]; then
-                error_message="The option -e|--exclude requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift
-            ;;
-        --exclude=*)
-            excluded_levels="${1#--out-file}"
-            excluded_levels="${excluded_levels#=}"
-            if [[ -z "${excluded_levels}" ]]; then
-                error_message="The option -e|--exclude requires a value."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            shift
-            ;;
-        -)
-            in_file="-"
-            shift
-            ;;
-        !(-)*)
-            if [[ -n "${in_file}" ]]; then
-                error_message="Only use one positional argument, found $1."
-                printf 'Error: %s\n' "${error_message}"
-                exit 1
-            fi
-            in_file="$1"
-            shift
-            ;;
-        *)
-            error_message="Unknown option $1."
-            printf 'Error: %s\n' "${error_message}"
-            exit 1
-            ;;
-    esac
-done
+ARGPARSER_ARG_DELIMITER_1="|"
+declare in_file
+declare out_file
+declare in_place
+declare excluded_levels
 
-# Check the values of the arguments.
-if [[ -z "${in_file}" ]]; then
-    error_message="You must give the input file as positional argument."
-    printf 'Error: %s\n' "${error_message}"
-    exit 1
-elif [[ ! -e "${in_file}" ]]; then
-    error_message="The input file does not exist."
-    printf 'Error: %s\n' "${error_message}"
-    exit 1
-elif [[ ! -f "${in_file}" ]]; then
-    error_message="The input file is not a regular file."
-    printf 'Error: %s\n' "${error_message}"
-    exit 1
-elif [[ ! -r "${in_file}" ]]; then
-    error_message="The input file is not readable."
-    printf 'Error: %s\n' "${error_message}"
-    exit 1
-elif [[ "${in_file}" == "-" ]]; then
+# shellcheck disable=SC2190  # Indexed, not associative array.
+args=(
+    "id              | short_opts | long_opts | val_names  | defaults    | choices | type | arg_no | arg_group            | notes | help                                            "
+    "in_file         | -          | -         | input_file |             | -       | str  |      1 | Positional arguments | -     | the input file from which to get the headers    "
+    "out_file        | o          | out-file  | FILE       |             | -       | str  |      1 | Options              | -     | the output file to write the TOC to             "
+    "in_place        | i          | in-place  | FILE       | false       | -       | bool |      0 | Options              | -     | act in-place, writing the TOC to the input file "
+    "excluded_levels | e          | exclude   | LEVELS     |             | -       | uint |      1 | Options              | -     | comma-separated list of header levels to exclude"
+)
+source argparser -- "$@"
+
+# Check the values of the arguments which the argparser didn't check.
+if [[ "${in_file}" == "-" ]]; then
     if [[ "${in_place}" == true ]]; then
         error_message="In-place operation on STDIN (-) is impossible."
         printf 'Error: %s\n' "${error_message}"
@@ -163,6 +69,8 @@ done
 # consecutive backticks or tildes, or four leading spaces, respectively,
 # these characters lose their meaning and are not interpreted as header
 # tokens.
+shopt -s extglob
+
 headers=( )
 is_fenced_code_block_backtick=false
 is_fenced_code_block_tilde=false
