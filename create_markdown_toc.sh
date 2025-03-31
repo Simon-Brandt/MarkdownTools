@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-02-14
+# Last Modification: 2025-03-31
 
 # Usage:
 # bash create_markdown_toc \
@@ -63,7 +63,7 @@ while (( "$#" > 0 )); do
             ;;
         !(-)*)
             if [[ -n "${in_file}" ]]; then
-                error_message="'Only use one positional argument, found $1."
+                error_message="Only use one positional argument, found $1."
                 printf 'Error: %s\n' "${error_message}"
                 exit 1
             fi
@@ -117,8 +117,8 @@ if [[ -n "${out_file}" && "${in_place}" == true ]]; then
 fi
 
 # Extract the headers from the input file.  These may start with
-# hashmarks ("#") or can be underlined with hyphens ("-") or equals
-# signs ("="). In fenced or indented code blocks, denoted by three
+# hashmarks ("#") or can be underlined with equals signs ("=") or
+# hyphens ("-").  In fenced or indented code blocks, denoted by three
 # consecutive backticks or tildes, or four leading spaces, respectively,
 # these characters lose their meaning and are not interpreted as header
 # tokens.
@@ -166,16 +166,16 @@ for i in "${!lines[@]}"; do
         # The line consists of equals signs, but the previous line
         # doesn't start with an equals sign and thus is a first-level
         # header.
-        headers+=("## ${prev_line}")
+        headers+=("# ${prev_line}")
     elif [[ "${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]* ]]; then
         # The line consists of hyphens, but the previous line doesn't
         # start with a hyphen and thus is a second-level header.
         headers+=("## ${prev_line}")
-    elif [[ "${line}" == *( )"<!-- <toc> -->"*( ) ]]; then
+    elif [[ "${line}" == "<!-- <toc> -->" ]]; then
         # The line denotes the start of the table of contents for later
         # in-place addition.
         toc_start="${i}"
-    elif [[ "${line}" == *( )"<!-- </toc> -->"*( ) ]]; then
+    elif [[ "${line}" == "<!-- </toc> -->" ]]; then
         # The line denotes the end of the table of contents for later
         # in-place addition.
         toc_end="${i}"
@@ -183,8 +183,7 @@ for i in "${!lines[@]}"; do
     prev_line="${line}"
 done
 
-# Convert the headers to valid hyperlinks and write them to the output
-# file.
+# Convert the headers to valid hyperlinks.
 toc_lines=( )
 declare -A links
 for header in "${headers[@]}"; do
@@ -229,10 +228,8 @@ for header in "${headers[@]}"; do
     toc_lines+=("${indent}[${title}](#${link})")
 done
 
-# Join the table of contents lines by newline characters and strip the
-# last of which.
+# Join the table of contents lines by newline characters.
 toc_lines=("$(printf '%s\n' "${toc_lines[@]}")")
-toc_lines[0]="${toc_lines[0]%\n}"
 
 if [[ "${in_place}" == true ]]; then
     # Replace the table of contents lines in the Markdown file.  Add
