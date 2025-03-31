@@ -1,0 +1,21 @@
+# Look for sourced files relative to the checked script.
+source-path=SCRIPTDIR
+source-path=SCRIPTDIR/..
+
+# Allow opening any sourced file, even if not specified as input.
+external-sources=true
+
+# Turn on warnings for nullary conditions.
+enable=avoid-nullary-conditions
+
+# Turn on warnings for unassigned uppercase variables.
+enable=check-unassigned-uppercase
+
+# Turn on warnings for unquoted variables with safe values.
+enable=quote-safe-variables
+
+# Turn on warnings for single bracket-tests.
+enable=require-double-brackets
+
+# Turn on warnings for variables without braces.
+enable=require-variable-braces
