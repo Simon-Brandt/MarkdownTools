@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-03-31
+# Last Modification: 2025-04-01
 
 # Usage:
 # bash create_markdown_toc \
@@ -13,7 +13,6 @@
 # table of contents.
 
 # Read and parse the arguments.
-ARGPARSER_ARG_DELIMITER_1="|"
 declare in_file
 declare out_file
 declare in_place
@@ -22,8 +21,8 @@ declare excluded_levels
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
     "id              | short_opts | long_opts | val_names  | defaults    | choices | type | arg_no | arg_group            | notes | help                                            "
-    "in_file         | -          | -         | input_file |             | -       | str  |      1 | Positional arguments | -     | the input file from which to get the headers    "
-    "out_file        | o          | out-file  | FILE       |             | -       | str  |      1 | Options              | -     | the output file to write the TOC to             "
+    "in_file         | -          | -         | input_file |             | -       | file |      1 | Positional arguments | -     | the input file from which to get the headers    "
+    "out_file        | o          | out-file  | FILE       |             | -       | file |      1 | Options              | -     | the output file to write the TOC to             "
     "in_place        | i          | in-place  | FILE       | false       | -       | bool |      0 | Options              | -     | act in-place, writing the TOC to the input file "
     "excluded_levels | e          | exclude   | LEVELS     |             | -       | uint |      1 | Options              | -     | comma-separated list of header levels to exclude"
 )
