@@ -22,9 +22,9 @@ declare excluded_levels
 args=(
     "id              | short_opts | long_opts | val_names  | defaults    | choices | type | arg_no | arg_group            | notes | help                                            "
     "in_file         |            |           | input_file |             |         | file |      1 | Positional arguments |       | the input file from which to get the headers    "
-    "out_file        | o          | out-file  | FILE       |             |         | file |      1 | Options              |       | the output file to write the TOC to             "
+    "out_file        | o          | out-file  | FILE       | ''          |         | file |      1 | Options              |       | the output file to write the TOC to             "
     "in_place        | i          | in-place  | FILE       | false       |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file "
-    "excluded_levels | e          | exclude   | LEVELS     |             |         | uint |      1 | Options              |       | comma-separated list of header levels to exclude"
+    "excluded_levels | e          | exclude   | LEVELS     | 0           |         | uint |      1 | Options              |       | comma-separated list of header levels to exclude"
 )
 source argparser -- "$@"
 
@@ -43,7 +43,7 @@ if [[ "${in_file}" == "-" ]]; then
     in_file=/dev/stdin
 fi
 
-if [[ -n "${out_file}" && "${in_place}" == true ]]; then
+if [[ "${out_file}" != "''" && "${in_place}" == true ]]; then
     error_message="Operating in-place and writing to an output file are "
     error_message+="mutually exclusive."
     printf 'Error: %s\n' "${error_message}"
