@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-02
+# Last Modification: 2025-04-03
 
 # Usage:
 # bash create_markdown_toc \
@@ -16,17 +16,21 @@
 declare in_file
 declare out_file
 declare in_place
+declare excluded_headers
 declare excluded_levels
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id              | short_opts | long_opts | val_names  | defaults    | choices | type | arg_no | arg_group            | notes | help                                            "
-    "in_file         |            |           | input_file |             |         | file |      1 | Positional arguments |       | the input file from which to get the headers    "
-    "out_file        | o          | out-file  | FILE       | ''          |         | file |      1 | Options              |       | the output file to write the TOC to             "
-    "in_place        | i          | in-place  | FILE       | false       |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file "
-    "excluded_levels | e          | exclude   | LEVELS     | 0           |         | uint |      1 | Options              |       | comma-separated list of header levels to exclude"
+    "id               | short_opts | long_opts       | val_names  | defaults | choices | type | arg_no | arg_group            | notes | help                                            "
+    "in_file          |            |                 | input_file |          |         | file |      1 | Positional arguments |       | the input file from which to get the headers    "
+    "out_file         | o          | out-file        | FILE       | ''       |         | file |      1 | Options              |       | the output file to write the TOC to             "
+    "in_place         | i          | in-place        | FILE       | false    |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file "
+    "excluded_headers | e          | exclude-headers | HEADERS    | ''       |         | str  |      + | Options              |       | comma-separated list of header names to exclude "
+    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0        |         | uint |      + | Options              |       | comma-separated list of header levels to exclude"
 )
 source argparser -- "$@"
+
+printf '%s\n' "${excluded_headers[@]}" >&2
 
 # Check the values of the arguments which the argparser didn't check.
 if [[ "${in_file}" == "-" ]]; then
@@ -166,6 +170,13 @@ for header in "${headers[@]}"; do
     title="${title##+(#)}"  # Remove leading hashmarks.
     title="${title##+( )}"  # Remove leading spaces.
     title="${title%%+( )}"  # Remove trailing spaces.
+
+    # If the header name shall be excluded, skip it.
+    for excluded_header in "${excluded_headers[@]}"; do
+        if [[ "${title}" == "${excluded_header}" ]]; then
+            continue 2
+        fi
+    done
 
     # Convert the header's characters to create a valid link.
     link="${header}"
