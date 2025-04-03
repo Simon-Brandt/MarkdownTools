@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-02
+# Last Modification: 2025-04-03
 
 # Warning: The script will stage all changes in the Markdown files, not
 # just the table of contents!
@@ -22,7 +22,12 @@ dir="$(git rev-parse --show-toplevel)"
 for file in "${files[@]}"; do
     if [[ "${file: -3}" == ".md" ]]; then
         file="${dir}/${file}"
-        bash create_markdown_toc.sh --in-place -- "${file}"
+        bash create_markdown_toc.sh \
+            --in-place \
+            --exclude-headers="Table of contents" \
+            --exclude-levels=1 \
+            -- \
+            "${file}"
         git add "${file}"
     fi
 done

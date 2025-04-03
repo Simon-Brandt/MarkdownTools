@@ -5,11 +5,9 @@
 ## Table of contents
 
 <!-- <toc> -->
-- [MarkdownTOC](#markdowntoc)
-  - [Table of contents](#table-of-contents)
-  - [Features](#features)
-  - [Installation](#installation)
-  - [Usage](#usage)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
 <!-- </toc> -->
 
 ## Features
