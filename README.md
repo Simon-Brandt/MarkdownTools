@@ -2,9 +2,9 @@
 
 `create_markdown_toc.sh` is a Bash script designed to generate a table of contents (TOC) for Markdown files. It extracts headings from the input Markdown file and converts them into a structured table of contents with valid hyperlinks, to be used in *e.g.* README files.
 
+<!-- <toc> -->
 ## Table of contents
 
-<!-- <toc> -->
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)

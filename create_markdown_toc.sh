@@ -5,9 +5,14 @@
 # Last Modification: 2025-04-03
 
 # Usage:
-# bash create_markdown_toc \
-#     [--in-place | --out-file=<out_file.md> ] \
-#     <in_file.md>
+# bash create_markdown_toc.sh [--help | --usage | --version]
+#                             [--add-title]
+#                             [--exclude-headers=HEADERS...]
+#                             [--exclude-levels=LEVELS...]
+#                             [--in-place]
+#                             [--out-file=FILE]
+#                             [--title=TITLE]
+#                             input_file
 
 # Purpose: Extract Markdown headings from a file and convert them into a
 # table of contents.
@@ -16,21 +21,23 @@
 declare in_file
 declare out_file
 declare in_place
-declare excluded_headers
-declare excluded_levels
+declare add_title
+declare title
+declare -a excluded_headers
+declare -a excluded_levels
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id               | short_opts | long_opts       | val_names  | defaults | choices | type | arg_no | arg_group            | notes | help                                            "
-    "in_file          |            |                 | input_file |          |         | file |      1 | Positional arguments |       | the input file from which to get the headers    "
-    "out_file         | o          | out-file        | FILE       | ''       |         | file |      1 | Options              |       | the output file to write the TOC to             "
-    "in_place         | i          | in-place        | FILE       | false    |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file "
-    "excluded_headers | e          | exclude-headers | HEADERS    | ''       |         | str  |      + | Options              |       | comma-separated list of header names to exclude "
-    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0        |         | uint |      + | Options              |       | comma-separated list of header levels to exclude"
+    "id               | short_opts | long_opts       | val_names  | defaults          | choices | type | arg_no | arg_group            | notes | help                                            "
+    "in_file          |            |                 | input_file |                   |         | file |      1 | Positional arguments |       | the input file from which to get the headers    "
+    "out_file         | o          | out-file        | FILE       | ''                |         | file |      1 | Options              |       | the output file to write the TOC to             "
+    "in_place         | i          | in-place        |            | false             |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file "
+    "add_title        | a          | add-title       |            | true              |         | bool |      0 | Options              |       | add a title to the TOC                          "
+    "title            | t          | title           |            | Table of contents |         | str  |      1 | Options              |       | the name of the title to add to the TOC         "
+    "excluded_headers | e          | exclude-headers | HEADERS    | ''                |         | str  |      + | Options              |       | comma-separated list of header names to exclude "
+    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0                 |         | uint |      + | Options              |       | comma-separated list of header levels to exclude"
 )
 source argparser -- "$@"
-
-printf '%s\n' "${excluded_headers[@]}" >&2
 
 # Check the values of the arguments which the argparser didn't check.
 if [[ "${in_file}" == "-" ]]; then
@@ -56,7 +63,6 @@ fi
 
 # Get the excluded header levels and compute the included ones.
 included_levels=( )
-IFS="," read -r -a excluded_levels <<< "${excluded_levels}"
 for included_level in 1 2 3 4 5 6; do
     for excluded_level in "${excluded_levels[@]}"; do
         if [[ "${included_level}" == "${excluded_level}" ]]; then
@@ -78,6 +84,8 @@ headers=( )
 is_fenced_code_block_backtick=false
 is_fenced_code_block_tilde=false
 is_indented_code_block=false
+is_toc_block=false
+toc_level=1
 prev_line=""
 
 mapfile -t lines < "${in_file}"
@@ -101,6 +109,13 @@ for i in "${!lines[@]}"; do
         if [[ "${line}" != "    "* ]]; then
             is_indented_code_block=false
         fi
+    elif [[ "${is_toc_block}" == true ]]; then
+        # The line lies within the table-of-contents block and may only
+        # end it by the </toc> comment.
+        if [[ "${line}" == "<!-- </toc> -->" ]]; then
+            is_toc_block=false
+            toc_end="${i}"
+        fi
     elif [[ "${line}" == "\`\`\`"* ]]; then
         # The line starts a fenced code block using backticks.
         is_fenced_code_block_backtick=true
@@ -110,33 +125,55 @@ for i in "${!lines[@]}"; do
     elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
         # The line starts an indented code block.
         is_indented_code_block=true
+    elif [[ "${line}" == "<!-- <toc> -->" ]]; then
+        # The line denotes the start of the table of contents for later
+        # in-place addition.
+        is_toc_block=true
+        toc_start="${i}"
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a header, starting with hashmarks, followed by at
-        # least one space.
+        # least one space.  Count the hashmarks.
         headers+=("${line}")
+
+        if [[ ! -v toc_start ]]; then
+            toc_level=0
+            while [[ "${line:toc_level:1}" == "#" ]]; do
+                (( toc_level++ ))
+            done
+        fi
     elif [[ "${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]* ]]; then
         # The line consists of equals signs, but the previous line
         # doesn't start with an equals sign and thus is a first-level
         # header.
         headers+=("# ${prev_line}")
+        if [[ ! -v toc_start ]]; then
+            toc_level=1
+        fi
     elif [[ "${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]* ]]; then
         # The line consists of hyphens, but the previous line doesn't
         # start with a hyphen and thus is a second-level header.
         headers+=("## ${prev_line}")
-    elif [[ "${line}" == "<!-- <toc> -->" ]]; then
-        # The line denotes the start of the table of contents for later
-        # in-place addition.
-        toc_start="${i}"
-    elif [[ "${line}" == "<!-- </toc> -->" ]]; then
-        # The line denotes the end of the table of contents for later
-        # in-place addition.
-        toc_end="${i}"
+
+        if [[ ! -v toc_start ]]; then
+            toc_level=2
+        fi
     fi
     prev_line="${line}"
 done
 
+# Possibly, set the table of contents' header, including a trailing
+# blank line (as empty string in the array).
+if [[ "${add_title}" == true ]]; then
+    printf -v header '%*s' "$((toc_level + 1))" ""
+    header="${header// /#}"
+    header+=" ${title}"
+    headers=("${header}" "${headers[@]}")
+    toc_lines=("${header}" "")
+else
+    toc_lines=( )
+fi
+
 # Convert the headers to valid hyperlinks.
-toc_lines=( )
 declare -A links
 for header in "${headers[@]}"; do
     # Count the leading hashmarks in the header.  If the header level
@@ -201,7 +238,7 @@ done
 # Join the table of contents lines by newline characters.
 toc_lines=("$(printf '%s\n' "${toc_lines[@]}")")
 
-if [[ "${in_place}" == true ]]; then
+if [[ "${in_place}" == true && -v toc_start ]]; then
     # Replace the table of contents lines in the Markdown file.  Add
     # the new table of contents between the retrieved start and end
     # lines, thereby replacing their contents (i.e., the previous table
