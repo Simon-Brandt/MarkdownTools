@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-03
+# Last Modification: 2025-04-04
 
 # Usage:
 # bash create_markdown_toc.sh [--help | --usage | --version]
@@ -16,6 +16,57 @@
 
 # Purpose: Extract Markdown headings from a file and convert them into a
 # table of contents.
+
+function header_to_title() {
+    # Convert a header's characters to create a valid title.
+    #
+    # Arguments:
+    # - $1: the header to create the title for
+    #
+    # Nonlocals:
+    # - title: the created title
+
+    local header
+
+    # Remove the leading and trailing spaces, and the leading hashmarks
+    # and spaces following them from the title.
+    header="$1"
+    title="${header}"
+    title="${title##+( )}"  # Remove leading spaces.
+    title="${title##+(#)}"  # Remove leading hashmarks.
+    title="${title##+( )}"  # Remove leading spaces.
+    title="${title%%+( )}"  # Remove trailing spaces.
+}
+
+function header_to_link() {
+    # Convert a header's characters to create a valid link.
+    #
+    # Arguments:
+    # - $1: the header to create the link for
+    #
+    # Nonlocals:
+    # - link: the created link
+    # - links: the associative array of all links created, yet
+
+    local header
+
+    # Create the link according to the specification.
+    header="$1"
+    link="${header}"
+    link="${link//[^[:alnum:] _-]/}"  # Remove any punctuation but "_" and "-".
+    link="${link##+( )}"              # Remove leading spaces.
+    link="${link%%+( )}"              # Remove trailing spaces.
+    link="${link// /-}"               # Replace spaces with hyphens.
+    link="${link@L}"                  # Make all characters lowercase.
+
+    # Check if the link is unique, else, append an integer.
+    if [[ -v links["${link}"] ]]; then
+        (( links[${link}]++ ))
+        link="${link}-${links[${link}]}"
+    else
+        links[${link}]=0
+    fi
+}
 
 # Read and parse the arguments.
 declare in_file
