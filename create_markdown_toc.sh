@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-04
+# Last Modification: 2025-04-08
 
 # Usage:
 # bash create_markdown_toc.sh [--help | --usage | --version]
@@ -184,6 +184,25 @@ for i in "${!lines[@]}"; do
     elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
         # The line starts an indented code block.
         is_indented_code_block=true
+    elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" ]]; then
+        # The line denotes the start of the table of contents for later
+        # in-place addition and contains a title.  Extract this and
+        # insert it between the titles set on the command line, at the
+        # current index denoted by the element count of ${toc_levels[@]}
+        # (which is the number of tables of contents processed/found so
+        # far).
+        is_toc_block=true
+        toc_starts+=("${i}")
+        toc_levels+=("${toc_level}")
+
+        toc_title="${line}"
+        toc_title="${toc_title#"<!-- <toc title=\""}"
+        toc_title="${toc_title%"\"> -->"}"
+        toc_titles=(
+            "${toc_titles[@]::"${#toc_levels[@]}"}"
+            "${toc_title}"
+            "${toc_titles[@]:"${#toc_levels[@]}"}"
+        )
     elif [[ "${line}" == "<!-- <toc> -->" ]]; then
         # The line denotes the start of the table of contents for later
         # in-place addition.
@@ -255,7 +274,7 @@ for i in "${!toc_levels[@]}"; do
     # computed, without interfering with the header.
     if [[ "${add_titles}" == true ]]; then
         printf -v toc_header '%*s' "${toc_level}" ""
-        toc_header="${toc_header// /#} ${toc_titles[j]:-"${toc_titles[0]}"}"
+        toc_header="${toc_header// /#} ${toc_titles[i]:-"${toc_titles[0]}"}"
         toc_headers=("${toc_header}" "${toc_headers[@]}")
 
         toc_header_levels=("${toc_level}" "${toc_header_levels[@]}")
@@ -281,6 +300,12 @@ for i in "${!toc_levels[@]}"; do
         # If the header name shall be excluded, skip it.
         for excluded_header in "${excluded_headers[@]}"; do
             if [[ "${title}" == "${excluded_header}" ]]; then
+                continue 2
+            fi
+        done
+
+        for toc_title in "${toc_titles[@]}"; do
+            if [[ "${title}" == "${toc_title}"* ]]; then
                 continue 2
             fi
         done
