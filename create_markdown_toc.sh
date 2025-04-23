@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-22
+# Last Modification: 2025-04-23
 
 # Usage:
 # bash create_markdown_toc.sh [--help | --usage | --version]
@@ -139,6 +139,8 @@ shopt -s extglob
 headers=( )
 header_levels=( )
 header_line_indices=( )
+hyperlinks=( )
+hyperlink_line_indices=( )
 
 is_fenced_code_block_backtick=false
 is_fenced_code_block_tilde=false
@@ -250,12 +252,38 @@ for i in "${!lines[@]}"; do
         header_levels+=("${header_level}")
 
         (( toc_level = header_level + 1 ))
+    elif [[ "${line}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; then
+        # The line contains at least one hyperlink. Extract it, then
+        # shorten the line and try to match the pattern on the remainder
+        # of the line.
+        hyperlink="${BASH_REMATCH[0]}"
+        hyperlinks+=("${hyperlink}")
+        remainder="${line##*"${hyperlink}"}"
+        hyperlink_line_indices+=("${i}")
+
+        while [[ "${remainder}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; do
+            hyperlink="${BASH_REMATCH[0]}"
+            hyperlinks+=("${hyperlink}")
+            remainder="${remainder##*"${hyperlink}"}"
+            hyperlink_line_indices+=("${i}")
+        done
     fi
     prev_line="${line}"
 done
 
+# Create the links for the currently old (unmodified) headers.  Since
+# the numbering may change, so does the link, which then needs to be
+# updated, below.  To this end, store the old links in an indexed array.
+declare -A links
+old_header_links=( )
+for header in "${headers[@]}"; do
+    header_to_link "${header}"
+    old_header_links+=("${link}")
+done
+unset links
+
 # Generate numbers for the headers.
-numbers=()
+numbers=( )
 header_level_counts=( )
 prev_header_level=0
 for i in "${!headers[@]}"; do
@@ -300,6 +328,29 @@ if [[ "${number_headers}" == true ]]; then
         fi
     done
 fi
+
+# Create the links for the new (modified) headers and store them in an
+# indexed array.
+declare -A links
+new_header_links=( )
+for header in "${headers[@]}"; do
+    header_to_link "${header}"
+    new_header_links+=("${link}")
+done
+unset links
+
+# Map the old header links to the new header links for later replacement
+# in the hyperlinks.  Since the old links may have already been numbered
+# or are still unnumbered, save also an unnumbered version.
+declare -A numbered_replacement_links
+declare -A unnumbered_replacement_links
+for i in "${!old_header_links[@]}"; do
+    old_header_link="${old_header_links[i]}"
+    numbered_replacement_links[${old_header_link}]="${new_header_links[i]}"
+
+    old_header_link="${old_header_links[i]#+([[:digit:]])-}"
+    unnumbered_replacement_links[${old_header_link}]="${new_header_links[i]}"
+done
 
 # Create the tables of contents.
 tocs=( )
@@ -422,14 +473,38 @@ for i in "${!toc_levels[@]}"; do
     tocs+=("$(printf '%s\n' "${toc_lines[@]}")")
 done
 
+# Write the lines to the output.
 if [[ "${in_place}" == true ]] && (( "${#tocs[@]}" > 0 )); then
-    # Possibly, replace the (now correctly numbered) headers in the
-    # Markdown file.
+    # Possibly, replace the (now correctly numbered) headers and their
+    # corresponding hyperlinks in the Markdown file.
     if [[ "${number_headers}" == true ]]; then
-        j=0
-        for i in "${header_line_indices[@]}"; do
-            lines[i]="${headers[j]}"
-            (( j++ ))
+        # Replace the headers.
+        i=0
+        for j in "${header_line_indices[@]}"; do
+            lines[j]="${headers[i]}"
+            (( i++ ))
+        done
+
+        # Replace the hyperlinks.  These may have already been numbered
+        # or are still unnumbered, so use the replacement from the
+        # respective associative array to replace the link in the
+        # Markdown hyperlink.
+        i=0
+        for j in "${hyperlink_line_indices[@]}"; do
+            old_hyperlink="${hyperlinks[i]}"
+            old_link="${old_hyperlink##*\(#}"
+            old_link="${old_link%)}"
+
+            if [[ -n "${numbered_replacement_links["${old_link}"]}" ]]; then
+                new_link="${numbered_replacement_links["${old_link}"]}"
+            else
+                new_link="${unnumbered_replacement_links["${old_link}"]}"
+            fi
+
+            new_hyperlink="${old_hyperlink%(*}(#${new_link})"
+            lines[j]="${lines[j]/"${old_hyperlink}"/"${new_hyperlink}"}"
+
+            (( i++ ))
         done
     fi
 
@@ -451,6 +526,6 @@ if [[ "${in_place}" == true ]] && (( "${#tocs[@]}" > 0 )); then
 else
     # Write the lines to the output file.
     if [[ -n "${toc_lines[0]}" ]]; then
-        printf '%s\n' "${toc_lines[0]}"
-    fi > "${out_file}"
+        printf '%s\n' "${toc_lines[0]}" > "${out_file}"
+    fi
 fi
