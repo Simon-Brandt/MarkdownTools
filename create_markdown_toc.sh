@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-23
+# Last Modification: 2025-05-23
 
 # Usage:
 # bash create_markdown_toc.sh [--help | --usage | --version]
@@ -299,7 +299,9 @@ for i in "${!headers[@]}"; do
     # If the header level is lower than the previous one, reset the
     # count in the previous level.  Increment the current level's count.
     if (( header_level < prev_header_level )); then
-        (( header_level_counts[prev_header_level] = 0 ))
+        for (( j = header_level + 1; j <= prev_header_level; j++ )); do
+            (( header_level_counts[j] = 0 ))
+        done
     fi
     (( header_level_counts[header_level]++ ))
 
