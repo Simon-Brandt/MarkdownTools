@@ -2,16 +2,16 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-04-03
+# Last Modification: 2025-05-23
 
 # Warning: The script will stage all changes in the Markdown files, not
 # just the table of contents!
 
-# Run create_markdown_toc.sh for any Markdown file to be committed.  As
-# git diff outputs only the filenames relative to the repository's base
-# directory, switch to this directory, if the script is called from
-# .git/hooks and fetch the absolute path of the directory from
-# git rev-parse to prepend it to each filename.1
+# Run `create_markdown_toc.sh` for any Markdown file to be committed.
+# As `git diff` outputs only the filenames relative to the repository's
+# base directory, switch to this directory, if the script is called from
+# `.git/hooks` and fetch the absolute path of the directory from
+# `git rev-parse` to prepend it to each filename.
 if [[ "${PWD: -10}" == ".git/hooks" ]]; then
     cd ../.. || exit 1
 fi
