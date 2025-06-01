@@ -1,4 +1,4 @@
-# MarkdownTOC
+# Markdown Tools
 
 `create_markdown_toc.sh` is a Bash script designed to generate a table of contents (TOC) for Markdown files. It extracts headings from the input Markdown file and converts them into a structured table of contents with valid hyperlinks, to be used in *e.g.* README files.
 
@@ -78,3 +78,27 @@ create_markdown_toc.sh --in-place <in_file.md>
 to write the TOC directly into the input file, modifying it in-place.
 
 When working with Git repositories, it may not be convenient to always have to re-run `create_markdown_toc.sh` by hand. Thus, using the provided sample [`pre-commit`](pre-commit) file, you can run the script *via* pre-commit hook anytime you create commits. Just copy `pre-commit` to `.git/hooks` in your Git repository, and before the actual commit happens, `create_markdown_toc.sh` will run over any Markdown file (with `.md` filename extension, change as appropriate) in the current staging level. After in-place modification, the Markdown files get staged, again, before committing them with the added or modified TOC. This means that both your changes and the TOC will be included in the same commit.
+
+## Include directives
+
+It is possible to include other files in the Markdown file using an include directive, optionally with language specification. If such is provided, the file's contents are surrounded by a fenced code block, using the language identifier. This enables the possibility of syntax highlighting by an appropriate Markdown renderer.
+
+<!-- <include file="example.sh" lang="bash"> -->
+```bash
+#!/bin/bash
+
+# Author: Simon Brandt
+# E-Mail: simon.brandt@uni-greifswald.de
+# Last Modification: 2025-05-28
+
+printf "Hello, world!\n"
+```
+<!-- </include> -->
+
+<!-- <include command="head --lines=10 example.md" lang="markdown"> -->
+# Include directive example
+
+<!-- <include command="printf '%s\n' "Included file contents will be given here.""> -->
+Included file contents will be given here.
+<!-- </include> -->
+<!-- </include> -->
