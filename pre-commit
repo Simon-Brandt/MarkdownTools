@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-05-23
+# Last Modification: 2025-06-02
 
 # Warning: The script will stage all changes in the Markdown files, not
 # just the table of contents!
@@ -28,6 +28,7 @@ for file in "${files[@]}"; do
             --exclude-levels=1 \
             -- \
             "${file}"
+        bash include_file.sh "${file}"
         git add "${file}"
     fi
 done
