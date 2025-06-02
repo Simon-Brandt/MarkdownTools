@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-05-28
+# Last Modification: 2025-06-02
 
 # Usage:
 # bash include_file.sh [--help | --usage | --version] input_file
@@ -30,10 +30,9 @@ for i in "${!lines[@]}"; do
     fi
 
     line="${lines[i]}"
-
-    echo "${categories[i]}" -- "${line}"
-
-    if [[ "${line}" =~ "<!-- <include file=\""(.*)"\" lang=\""(.*)"\"> -->" ]]
+    if [[
+        "${line}" =~ ^"<!-- <include file=\""(.*)"\" lang=\""(.*)"\"> -->"$
+    ]]
     then
         # The line denotes the start of the include block and contains a
         # filename and language specification.
@@ -48,14 +47,14 @@ for i in "${!lines[@]}"; do
 
         lines[i]+=$'\n'
         lines[i]+="\`\`\`"
-    elif [[ "${line}" =~ "<!-- <include file=\""(.*)"\"> -->" ]]; then
+    elif [[ "${line}" =~ ^"<!-- <include file=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the include block and contains a
         # filename.
         filename="${BASH_REMATCH[1]}"
         lines[i]+=$'\n'
         lines[i]+="$(< "${filename}")"
     elif [[
-        "${line}" =~ "<!-- <include command=\""(.*)"\" lang=\""(.*)"\"> -->"
+        "${line}" =~ ^"<!-- <include command=\""(.*)"\" lang=\""(.*)"\"> -->"$
     ]]
     then
         # The line denotes the start of the include block and contains a
@@ -71,7 +70,7 @@ for i in "${!lines[@]}"; do
 
         lines[i]+=$'\n'
         lines[i]+="\`\`\`"
-    elif [[ "${line}" =~ "<!-- <include command=\""(.*)"\"> -->" ]]; then
+    elif [[ "${line}" =~ ^"<!-- <include command=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the include block and contains a
         # command.
         command="${BASH_REMATCH[1]}"
