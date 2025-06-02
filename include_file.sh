@@ -68,6 +68,10 @@ for i in "${!lines[@]}"; do
         lines[i]+=$'\n'
         lines[i]+="$(eval "${command}")"
 
+        if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
+            lines[i]="${lines[i]//$'\n'/& }"
+        fi
+
         lines[i]+=$'\n'
         lines[i]+="\`\`\`"
     elif [[ "${line}" =~ ^"<!-- <include command=\""(.*)"\"> -->"$ ]]; then
@@ -76,6 +80,10 @@ for i in "${!lines[@]}"; do
         command="${BASH_REMATCH[1]}"
         lines[i]+=$'\n'
         lines[i]+="$(eval "${command}")"
+
+        if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
+            lines[i]="${lines[i]//$'\n'/& }"
+        fi
     elif [[ "${line}" != "<!-- </include> -->" ]]; then
         # The line contains the previously included file's contents and
         # does not denote the end of the include block.
