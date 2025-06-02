@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-05-28
+# Last Modification: 2025-06-02
 
 # Usage:
 # bash categorize_markdown_lines.sh [--help | --usage | --version] input_file
@@ -31,6 +31,7 @@ shopt -s extglob
 is_fenced_code_block_backtick=false
 is_fenced_code_block_tilde=false
 is_indented_code_block=false
+is_include_block=false
 is_toc_block=false
 
 categories=( )
@@ -59,9 +60,16 @@ for i in "${!lines[@]}"; do
             is_indented_code_block=false
         fi
         categories+=("indented code block")
+    elif [[ "${is_include_block}" == true ]]; then
+        # The line lies within an include block and may only end it by
+        # the </include> comment.
+        if [[ "${line}" == "<!-- </include> -->" ]]; then
+            is_include_block=false
+        fi
+        categories+=("include block")
     elif [[ "${is_toc_block}" == true ]]; then
-        # The line lies within an table-of-contents block and may only
-        # end it by the </toc> comment.
+        # The line lies within a table of contents and may only end it
+        # by the </toc> comment.
         if [[ "${line}" == "<!-- </toc> -->" ]]; then
             is_toc_block=false
         fi
@@ -78,6 +86,20 @@ for i in "${!lines[@]}"; do
         # The line starts an indented code block.
         is_indented_code_block=true
         categories+=("indented code block")
+    elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" ]]; then
+        # The line denotes the start of the include block and contains a
+        # filename.
+        is_include_block=true
+        categories+=("include block")
+    elif [[ "${line}" == "<!-- <include command=\""*"\"> -->" ]]; then
+        # The line denotes the start of the include block and contains a
+        # command.
+        is_include_block=true
+        categories+=("include block")
+    elif [[ "${line}" == "<!-- <include> -->" ]]; then
+        # The line denotes the start of the include block.
+        is_include_block=true
+        categories+=("include block")
     elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" ]]; then
         # The line denotes the start of the table of contents and
         # contains a title.
