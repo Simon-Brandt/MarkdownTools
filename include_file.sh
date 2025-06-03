@@ -64,6 +64,11 @@ for i in "${!lines[@]}"; do
         lines[i]+=$'\n'
         lines[i]+="\`\`\`${language}"
 
+        if [[ "${language}" == "console" ]]; then
+            lines[i]+=$'\n'
+            lines[i]+="\$ ${command}"
+        fi
+
         lines[i]+=$'\n'
         lines[i]+="$(eval "${command}" 2>&1)"
 
