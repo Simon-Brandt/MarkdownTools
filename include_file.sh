@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-02
+# Last Modification: 2025-06-03
 
 # Usage:
 # bash include_file.sh [--help | --usage | --version] input_file
@@ -22,7 +22,8 @@ args=(
 source argparser -- "$@"
 
 mapfile -t lines < "${in_file}"
-mapfile -t categories < <(bash categorize_markdown_lines.sh "${in_file}")
+mapfile -t categories \
+    < <(bash "${BASH_SOURCE[0]%/*}/categorize_markdown_lines.sh" "${in_file}")
 
 for i in "${!lines[@]}"; do
     if [[ "${categories[i]}" != "include block" ]]; then
