@@ -2,13 +2,14 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-02
+# Last Modification: 2025-06-03
 
 # Usage:
 # bash categorize_markdown_lines.sh [--help | --usage | --version] input_file
 
 # Purpose: Categorize a Markdown file's lines to headers, table of
-# contents (TOC) lines, and include directives.
+# contents (TOC) lines, and include directives.  Write these categories
+# to STDOUT.
 
 # Read and parse the arguments.
 declare in_file
@@ -28,100 +29,84 @@ source argparser -- "$@"
 # are not interpreted as the respective tokens.
 shopt -s extglob
 
-is_fenced_code_block_backtick=false
-is_fenced_code_block_tilde=false
-is_indented_code_block=false
-is_include_block=false
-is_toc_block=false
-
+block=""
 categories=( )
 
 mapfile -t lines < "${in_file}"
 for i in "${!lines[@]}"; do
     line="${lines[i]}"
-    if [[ "${is_fenced_code_block_backtick}" == true ]]; then
+    if [[ "${block}" == "fenced code block backtick" ]]; then
         # The line lies within a fenced code block and may only end it
         # by three backticks.
         if [[ "${line}" == "\`\`\`"* ]]; then
-            is_fenced_code_block_backtick=false
+            block=""
         fi
         categories+=("fenced code block backtick")
-    elif [[ "${is_fenced_code_block_tilde}" == true ]]; then
+    elif [[ "${block}" == "fenced code block tilde" ]]; then
         # The line lies within a fenced code block and may only end it
         # by three tildes.
         if [[ "${line}" == "~~~"* ]]; then
-            is_fenced_code_block_tilde=false
+            block=""
         fi
         categories+=("fenced code block tilde")
-    elif [[ "${is_indented_code_block}" == true ]]; then
+    elif [[ "${block}" == "indented code block" ]]; then
         # The line lies within an indented code block and may only end
         # it by less than four leading spaces.
         if [[ "${line}" != "    "* ]]; then
-            is_indented_code_block=false
+            block=""
         fi
         categories+=("indented code block")
-    elif [[ "${is_include_block}" == true ]]; then
+    elif [[ "${block}" == "include block" ]]; then
         # The line lies within an include block and may only end it by
         # the </include> comment.
         if [[ "${line}" == "<!-- </include> -->" ]]; then
-            is_include_block=false
+            block=""
         fi
         categories+=("include block")
-    elif [[ "${is_toc_block}" == true ]]; then
+    elif [[ "${block}" == "toc block" ]]; then
         # The line lies within a table of contents and may only end it
         # by the </toc> comment.
         if [[ "${line}" == "<!-- </toc> -->" ]]; then
-            is_toc_block=false
+            block=""
         fi
         categories+=("toc block")
     elif [[ "${line}" == "\`\`\`"* ]]; then
         # The line starts a fenced code block using backticks.
-        is_fenced_code_block_backtick=true
-        categories+=("fenced code block backtick")
+        block="fenced code block backtick"
+        categories+=("${block}")
     elif [[ "${line}" == "~~~"* ]]; then
         # The line starts a fenced code block using tildes.
-        is_fenced_code_block_tilde=true
-        categories+=("fenced code block tilde")
+        block="fenced code block tilde"
+        categories+=("${block}")
     elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
         # The line starts an indented code block.
-        is_indented_code_block=true
+        block="indented code block"
         categories+=("indented code block")
-    elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" ]]; then
-        # The line denotes the start of the include block and contains a
-        # filename.
-        is_include_block=true
-        categories+=("include block")
-    elif [[ "${line}" == "<!-- <include command=\""*"\"> -->" ]]; then
-        # The line denotes the start of the include block and contains a
-        # command.
-        is_include_block=true
-        categories+=("include block")
-    elif [[ "${line}" == "<!-- <include> -->" ]]; then
-        # The line denotes the start of the include block.
-        is_include_block=true
-        categories+=("include block")
-    elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" ]]; then
-        # The line denotes the start of the table of contents and
-        # contains a title.
-        is_toc_block=true
-        categories+=("toc block")
-    elif [[ "${line}" == "<!-- <toc> -->" ]]; then
-        # The line denotes the start of the table of contents.
-        is_toc_block=true
-        categories+=("toc block")
+    elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" \
+        || "${line}" == "<!-- <include command=\""*"\"> -->" \
+        || "${line}" == "<!-- <include> -->" ]]
+    then
+        # The line denotes the start of the include block and may
+        # contain a filename or command.
+        block="include block"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" \
+        || "${line}" == "<!-- <toc> -->" ]]
+    then
+        # The line denotes the start of the table of contents and may
+        # contain a title.
+        block="toc block"
+        categories+=("${block}")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a header, starting with hashmarks, followed by at
         # least one space.
         categories+=("header")
-    elif [[ "${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]* ]]; then
-        # The line consists of equals signs, but the previous line
-        # doesn't start with an equals sign and thus is a first-level
-        # header.
-        categories[-1]="header"
-        categories+=("other")
-    elif [[ "${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]* ]]; then
-        # The line consists of hyphens, but the previous line doesn't
-        # start with a hyphen and thus is a second-level header.
+    elif [[ ("${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]*) \
+        || ("${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]*) ]]
+    then
+        # The line consists of equals signs or hyphens, but the previous
+        # line doesn't start with an equals sign or hyphen and thus is a
+        # first- or second-level header.
         categories[-1]="header"
         categories+=("other")
     elif [[ "${line}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; then
