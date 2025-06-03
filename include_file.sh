@@ -9,8 +9,6 @@
 
 # Purpose: Include a file in the Markdown file.
 
-set -o errexit -o pipefail
-
 # Read and parse the arguments.
 declare in_file
 
@@ -67,7 +65,7 @@ for i in "${!lines[@]}"; do
         lines[i]+="\`\`\`${language}"
 
         lines[i]+=$'\n'
-        lines[i]+="$(eval "${command}")"
+        lines[i]+="$(eval "${command}" 2>&1)"
 
         if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
             lines[i]="${lines[i]//$'\n'/& }"
@@ -80,7 +78,7 @@ for i in "${!lines[@]}"; do
         # command.
         command="${BASH_REMATCH[1]}"
         lines[i]+=$'\n'
-        lines[i]+="$(eval "${command}")"
+        lines[i]+="$(eval "${command}" 2>&1)"
 
         if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
             lines[i]="${lines[i]//$'\n'/& }"
