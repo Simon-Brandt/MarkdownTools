@@ -19,10 +19,18 @@ args=(
 )
 source argparser -- "$@"
 
-mapfile -t lines < "${in_file}"
-mapfile -t categories \
-    < <(bash "${BASH_SOURCE[0]%/*}/categorize_markdown_lines.sh" "${in_file}")
+# Categorize the lines.
+if [[ "${BASH_SOURCE[0]}" == */* ]]; then
+    directory="${BASH_SOURCE[0]%/*}/"
+else
+    directory=""
+fi
 
+mapfile -t categories \
+    < <(bash "${directory}categorize_markdown_lines.sh" "${in_file}")
+mapfile -t lines < "${in_file}"
+
+# Include the files and command outputs.
 for i in "${!lines[@]}"; do
     if [[ "${categories[i]}" != "include block" ]]; then
         continue
