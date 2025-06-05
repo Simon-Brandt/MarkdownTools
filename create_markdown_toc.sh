@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-05-23
+# Last Modification: 2025-06-05
 
 # Usage:
 # bash create_markdown_toc.sh [--help | --usage | --version]
@@ -56,9 +56,10 @@ function header_to_link() {
     # Create the link according to the specification.
     header="$1"
     link="${header}"
-    link="${link//[^[:alnum:] _-]/}"  # Remove any punctuation but "_" and "-".
+    link="${link##+(#)}"              # Remove leading hashmarks.
     link="${link##+( )}"              # Remove leading spaces.
     link="${link%%+( )}"              # Remove trailing spaces.
+    link="${link//[^[:alnum:] _-]/}"  # Remove any punctuation but "_" and "-".
     link="${link// /-}"               # Replace spaces with hyphens.
     link="${link@L}"                  # Make all characters lowercase.
 
