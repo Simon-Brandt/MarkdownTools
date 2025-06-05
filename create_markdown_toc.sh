@@ -84,15 +84,15 @@ declare -a excluded_levels
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id               | short_opts | long_opts       | val_names  | defaults          | choices | type | arg_no | arg_group            | notes | help                                             "
-    "in_file          |            |                 | input_file |                   |         | file |      1 | Positional arguments |       | the input file from which to get the headers     "
-    "out_file         | o          | out-file        | FILE       | ''                |         | file |      1 | Options              |       | the output file to write the TOC to              "
-    "in_place         | i          | in-place        |            | false             |         | bool |      0 | Options              |       | act in-place, writing the TOC to the input file  "
-    "add_titles       | a          | add-titles      |            | true              |         | bool |      0 | Options              |       | add a title to each TOC                          "
-    "toc_titles       | t          | titles          |            | Table of contents |         | str  |      + | Options              |       | the TOC titles to add to the TOCs                "
-    "number_headers   | n          | number-headers  |            | true              |         | bool |      0 | Options              |       | number the headers, in a \"1.2.3.4.5.6.\" fashion"
-    "excluded_headers | e          | exclude-headers | HEADERS    | ''                |         | str  |      + | Options              |       | comma-separated list of header names to exclude  "
-    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0                 |         | uint |      + | Options              |       | comma-separated list of header levels to exclude "
+    "id               | short_opts | long_opts       | val_names  | defaults          | type | arg_no | arg_group            | help                                             "
+    "in_file          |            |                 | input_file |                   | file |      1 | Positional arguments | the input file from which to get the headers     "
+    "out_file         | o          | out-file        | FILE       | ''                | file |      1 | Options              | the output file to write the TOC to              "
+    "in_place         | i          | in-place        |            | false             | bool |      0 | Options              | act in-place, writing the TOC to the input file  "
+    "add_titles       | a          | add-titles      |            | true              | bool |      0 | Options              | add a title to each TOC                          "
+    "toc_titles       | t          | titles          |            | Table of contents | str  |      + | Options              | the TOC titles to add to the TOCs                "
+    "number_headers   | n          | number-headers  |            | true              | bool |      0 | Options              | number the headers, in a \"1.2.3.4.5.6.\" fashion"
+    "excluded_headers | e          | exclude-headers | HEADERS    | ''                | str  |      + | Options              | comma-separated list of header names to exclude  "
+    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0                 | uint |      + | Options              | comma-separated list of header levels to exclude "
 )
 source argparser -- "$@"
 
