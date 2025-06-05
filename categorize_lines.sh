@@ -63,6 +63,13 @@ for i in "${!lines[@]}"; do
             block=""
         fi
         categories+=("include block")
+    elif [[ "${block}" == "section block" ]]; then
+        # The line lies within a section block and may only end it by
+        # the </section> comment.
+        if [[ "${line}" == "<!-- </section> -->" ]]; then
+            block=""
+        fi
+        categories+=("section block")
     elif [[ "${block}" == "toc block" ]]; then
         # The line lies within a table of contents and may only end it
         # by the </toc> comment.
@@ -89,6 +96,11 @@ for i in "${!lines[@]}"; do
         # The line denotes the start of the include block and may
         # contain a filename or command.
         block="include block"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- <section file=\""*"\"> -->" ]]; then
+        # The line denotes the start of the section block and contains a
+        # filename.
+        block="section block"
         categories+=("${block}")
     elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" \
         || "${line}" == "<!-- <toc> -->" ]]
