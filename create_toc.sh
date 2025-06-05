@@ -5,14 +5,14 @@
 # Last Modification: 2025-06-05
 
 # Usage:
-# bash create_markdown_toc.sh [--help | --usage | --version]
-#                             [--add-titles]
-#                             [--exclude-headers=HEADERS...]
-#                             [--exclude-levels=LEVELS...]
-#                             [--in-place]
-#                             [--out-file=FILE]
-#                             [--titles=TITLES]
-#                             input_file
+# bash create_toc.sh [--help | --usage | --version]
+#                    [--add-titles]
+#                    [--exclude-headers=HEADERS...]
+#                    [--exclude-levels=LEVELS...]
+#                    [--in-place]
+#                    [--out-file=FILE]
+#                    [--titles=TITLES]
+#                    input_file
 
 # Purpose: Extract Markdown headings from a file and convert them into a
 # table of contents.

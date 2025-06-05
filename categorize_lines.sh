@@ -5,7 +5,7 @@
 # Last Modification: 2025-06-03
 
 # Usage:
-# bash categorize_markdown_lines.sh [--help | --usage | --version] input_file
+# bash categorize_lines.sh [--help | --usage | --version] input_file
 
 # Purpose: Categorize a Markdown file's lines to headers, table of
 # contents (TOC) lines, and include directives.  Write these categories
