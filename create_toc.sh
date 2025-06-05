@@ -129,12 +129,17 @@ for included_level in 1 2 3 4 5 6; do
     included_levels+=("${included_level}")
 done
 
-# Extract the headers from the input file.  These may start with
-# hashmarks ("#") or can be underlined with equals signs ("=") or
-# hyphens ("-").  In fenced or indented code blocks, denoted by three
-# consecutive backticks or tildes, or four leading spaces, respectively,
-# these characters lose their meaning and are not interpreted as header
-# tokens.
+# Categorize the lines.
+if [[ "${BASH_SOURCE[0]}" == */* ]]; then
+    directory="${BASH_SOURCE[0]%/*}/"
+else
+    directory=""
+fi
+
+mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
+mapfile -t lines < "${in_file}"
+
+# Get the table-of-contents blocks, headers, and hyperlinks.
 shopt -s extglob
 
 headers=( )
@@ -143,125 +148,66 @@ header_line_indices=( )
 hyperlinks=( )
 hyperlink_line_indices=( )
 
-is_fenced_code_block_backtick=false
-is_fenced_code_block_tilde=false
-is_indented_code_block=false
-is_toc_block=false
-
 toc_level=1
 toc_levels=( )
 toc_starts=( )
 toc_ends=( )
 
-prev_line=""
-
-mapfile -t lines < "${in_file}"
 for i in "${!lines[@]}"; do
+    if [[ "${categories[i]}" != "toc block" \
+        && "${categories[i]}" != "header"* \
+        && "${categories[i]}" != "hyperlink" ]]
+    then
+        continue
+    fi
+
     line="${lines[i]}"
-    if [[ "${is_fenced_code_block_backtick}" == true ]]; then
-        # The line lies within a fenced code block and may only end it
-        # by three backticks.
-        if [[ "${line}" == "\`\`\`"* ]]; then
-            is_fenced_code_block_backtick=false
-        fi
-    elif [[ "${is_fenced_code_block_tilde}" == true ]]; then
-        # The line lies within a fenced code block and may only end it
-        # by three tildes.
-        if [[ "${line}" == "~~~"* ]]; then
-            is_fenced_code_block_tilde=false
-        fi
-    elif [[ "${is_indented_code_block}" == true ]]; then
-        # The line lies within an indented code block and may only end
-        # it by less than four leading spaces.
-        if [[ "${line}" != "    "* ]]; then
-            is_indented_code_block=false
-        fi
-    elif [[ "${is_toc_block}" == true ]]; then
-        # The line lies within the table-of-contents block and may only
-        # end it by the </toc> comment.
-        if [[ "${line}" == "<!-- </toc> -->" ]]; then
-            is_toc_block=false
+    if [[ "${categories[i]}" == "toc block" ]]; then
+        if [[ "${line}" =~ ^"<!-- <toc title=\""(.*)"\"> -->"$ ]]; then
+            # The line denotes the start of the table of contents for
+            # later in-place addition and contains a title.  Extract
+            # this and insert it between the titles set on the command
+            # line, at the current index denoted by the element count of
+            # ${toc_levels[@]} (which is the number of tables of
+            # contents processed/found so far).
+            toc_starts+=("${i}")
+            toc_levels+=("${toc_level}")
+
+            toc_title="${BASH_REMATCH[1]}"
+            toc_titles=(
+                "${toc_titles[@]::"${#toc_levels[@]}"}"
+                "${toc_title}"
+                "${toc_titles[@]:"${#toc_levels[@]}"}"
+            )
+        elif [[ "${line}" == "<!-- <toc> -->" ]]; then
+            # The line denotes the start of the table of contents for
+            # later in-place addition.
+            toc_starts+=("${i}")
+            toc_levels+=("${toc_level}")
+        elif [[ "${line}" == "<!-- </toc> -->" ]]; then
+            # The line denotes the end of the table-of-contents block.
             toc_ends+=("${i}")
         fi
-    elif [[ "${line}" == "\`\`\`"* ]]; then
-        # The line starts a fenced code block using backticks.
-        is_fenced_code_block_backtick=true
-    elif [[ "${line}" == "~~~"* ]]; then
-        # The line starts a fenced code block using tildes.
-        is_fenced_code_block_tilde=true
-    elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
-        # The line starts an indented code block.
-        is_indented_code_block=true
-    elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" ]]; then
-        # The line denotes the start of the table of contents for later
-        # in-place addition and contains a title.  Extract this and
-        # insert it between the titles set on the command line, at the
-        # current index denoted by the element count of ${toc_levels[@]}
-        # (which is the number of tables of contents processed/found so
-        # far).
-        is_toc_block=true
-        toc_starts+=("${i}")
-        toc_levels+=("${toc_level}")
-
-        toc_title="${line}"
-        toc_title="${toc_title#"<!-- <toc title=\""}"
-        toc_title="${toc_title%"\"> -->"}"
-        toc_titles=(
-            "${toc_titles[@]::"${#toc_levels[@]}"}"
-            "${toc_title}"
-            "${toc_titles[@]:"${#toc_levels[@]}"}"
-        )
-    elif [[ "${line}" == "<!-- <toc> -->" ]]; then
-        # The line denotes the start of the table of contents for later
-        # in-place addition.
-        is_toc_block=true
-        toc_starts+=("${i}")
-        toc_levels+=("${toc_level}")
-    elif [[ "${line}" == *( )+(\#)+( )* ]]; then
-        # The line is a header, starting with hashmarks, followed by at
-        # least one space.  Count the hashmarks, after having removed
-        # the leading spaces.
-        headers+=("${line}")
+    elif [[ "${categories[i]}" == "header"* ]]; then
+        # The line is a header.  Get the header level and prepend as
+        # many hashmarks as the header level to the hashmark-stripped
+        # header to set ATX and setext headers to the same (ATX) style.
         header_line_indices+=("${i}")
+        header_level="${categories[i]##* }"
+        header_levels+=("${header_level}")
+        (( toc_level = header_level + 1 ))
 
-        header_level=0
-        line="${line##+( )}"
-        while [[ "${line:header_level:1}" == "#" ]]; do
-            (( header_level++ ))
+        header="${line##+( )}"
+        header="${header##+(\#)}"
+        for (( j = 1; j <= header_level; j++ )); do
+            header="#${header}"
         done
-        header_levels+=("${header_level}")
-
-        (( toc_level = header_level + 1 ))
-    elif [[ "${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]* ]]; then
-        # The line consists of equals signs, but the previous line
-        # doesn't start with an equals sign and thus is a first-level
-        # header.
-        headers+=("# ${prev_line}")
-        header_line_indices+=("${i}")
-
-        header_level=1
-        header_levels+=("${header_level}")
-
-        (( toc_level = header_level + 1 ))
-    elif [[ "${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]* ]]; then
-        # The line consists of hyphens, but the previous line doesn't
-        # start with a hyphen and thus is a second-level header.
-        headers+=("## ${prev_line}")
-        header_line_indices+=("${i}")
-
-        header_level=2
-        header_levels+=("${header_level}")
-
-        (( toc_level = header_level + 1 ))
-    elif [[ "${line}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; then
+        headers+=("${header}")
+    elif [[ "${categories[i]}" == "hyperlink" ]]; then
         # The line contains at least one hyperlink. Extract it, then
         # shorten the line and try to match the pattern on the remainder
         # of the line.
-        hyperlink="${BASH_REMATCH[0]}"
-        hyperlinks+=("${hyperlink}")
-        remainder="${line##*"${hyperlink}"}"
-        hyperlink_line_indices+=("${i}")
-
+        remainder="${line}"
         while [[ "${remainder}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; do
             hyperlink="${BASH_REMATCH[0]}"
             hyperlinks+=("${hyperlink}")
@@ -269,7 +215,6 @@ for i in "${!lines[@]}"; do
             hyperlink_line_indices+=("${i}")
         done
     fi
-    prev_line="${line}"
 done
 
 # Create the links for the currently old (unmodified) headers.  Since

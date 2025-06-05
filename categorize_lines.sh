@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-03
+# Last Modification: 2025-06-05
 
 # Usage:
 # bash categorize_lines.sh [--help | --usage | --version] input_file
@@ -99,15 +99,25 @@ for i in "${!lines[@]}"; do
         categories+=("${block}")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a header, starting with hashmarks, followed by at
-        # least one space.
-        categories+=("header")
-    elif [[ ("${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]*) \
-        || ("${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]*) ]]
-    then
-        # The line consists of equals signs or hyphens, but the previous
-        # line doesn't start with an equals sign or hyphen and thus is a
-        # first- or second-level header.
-        categories[-1]="header"
+        # least one space.  Count the hashmarks, after having removed
+        # the leading spaces.
+        header_level=0
+        header="${line##+( )}"
+        while [[ "${header:header_level:1}" == "#" ]]; do
+            (( header_level++ ))
+        done
+
+        categories+=("header ${header_level}")
+    elif [[ ("${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]*) ]]; then
+        # The line consists of equals signs, but the previous line
+        # doesn't start with an equals sign and thus is a first-level
+        # header.
+        categories[-1]="header 1"
+        categories+=("other")
+    elif [[ ("${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]*) ]]; then
+        # The line consists of hyphens, but the previous line doesn't start
+        # with a hyphen and thus is a second-level header.
+        categories[-1]="header 2"
         categories+=("other")
     elif [[ "${line}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; then
         # The line contains at least one hyperlink.
