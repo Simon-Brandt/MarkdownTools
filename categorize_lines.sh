@@ -16,8 +16,8 @@ declare in_file
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id      | short_opts | long_opts | val_names  | defaults | choices | type | arg_no | arg_group            | notes | help                   "
-    "in_file |            |           | input_file |          |         | file |      1 | Positional arguments |       | the input Markdown file"
+    "id      | val_names  | type | arg_no | arg_group            | help                   "
+    "in_file | input_file | file |      1 | Positional arguments | the input Markdown file"
 )
 source argparser -- "$@"
 
