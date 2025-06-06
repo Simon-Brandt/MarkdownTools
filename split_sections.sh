@@ -41,14 +41,16 @@ mapfile -t lines < "${in_file}"
 # used to modify the hyperlinks, below.
 shopt -s extglob
 
-declare -A links
 declare -A header_sections
+declare -A links
+sections=( )
 for i in "${!lines[@]}"; do
     line="${lines[i]}"
     if [[ "${categories[i]}" == "section block" ]]; then
         # Get the current section.
         if [[ "${line}" =~ ^"<!-- <section file=\""(.*)"\"> -->"$ ]]; then
             file="${BASH_REMATCH[1]}"
+            sections+=("${file}")
         fi
     elif [[ "${categories[i]}" == "header"* ]]; then
         # Convert the header's characters to create a valid link.
@@ -60,6 +62,7 @@ done
 
 # Split the file by section.
 file=""
+section_index=-1
 for i in "${!lines[@]}"; do
     line="${lines[i]}"
     if [[ "${categories[i]}" == "toc block" \
@@ -106,9 +109,45 @@ for i in "${!lines[@]}"; do
         if [[ -e "${file}" ]]; then
             rm "${file}"
         fi
+
+        (( section_index++ ))
     elif [[ "${line}" == "<!-- </section> -->" ]]; then
-        # The line denotes the end of the section block.  Reset the
-        # filename, meaning currently not to write to a file.
+        # The line denotes the end of the section block.  Add a
+        # hyperlink to the previous and next sections, then reset the
+        # filename, meaning afterwards not to write to a file.
+
+        # shellcheck disable=SC2094  # Only writing to file and using filename.
+        {
+            printf '\n'
+            if (( section_index == 0 )); then
+                # The section is the first, so print only the link to
+                # the next section.
+                traverse_path "${file}" "${sections[section_index + 1]}"
+                section="${traversed_path}"
+                printf '[%s&nbsp;&#129094;](%s)\n' "${section}" "${section}"
+            elif (( section_index == "${#sections[@]}" - 1 )); then
+                # The section is the last, so print only the link to
+                # the previous section.
+                traverse_path "${file}" "${sections[section_index - 1]}"
+                section="${traversed_path}"
+                printf '[&#129092;&nbsp;%s](%s)\n' "${section}" "${section}"
+            else
+                # The section is in-between, so print the links to the
+                # previous and next sections.
+                traverse_path "${file}" "${sections[section_index - 1]}"
+                section="${traversed_path}"
+                printf '[&#129092;&nbsp;%s](%s)\n' "${section}" "${section}"
+
+                for _ in {1..10}; do
+                    printf '&nbsp;'
+                done
+
+                traverse_path "${file}" "${sections[section_index + 1]}"
+                section="${traversed_path}"
+                printf '[%s&nbsp;&#129094;](%s)\n' "${section}" "${section}"
+            fi
+        } >> "${file}"
+
         file=""
     else
         # The line contains the section's content.  Append it to the
