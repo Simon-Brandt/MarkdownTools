@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-05
+# Last Modification: 2025-06-06
 
 # Usage:
 # bash categorize_lines.sh [--help | --usage | --version] input_file
@@ -63,13 +63,6 @@ for i in "${!lines[@]}"; do
             block=""
         fi
         categories+=("include block")
-    elif [[ "${block}" == "section block" ]]; then
-        # The line lies within a section block and may only end it by
-        # the </section> comment.
-        if [[ "${line}" == "<!-- </section> -->" ]]; then
-            block=""
-        fi
-        categories+=("section block")
     elif [[ "${block}" == "toc block" ]]; then
         # The line lies within a table of contents and may only end it
         # by the </toc> comment.
@@ -102,6 +95,10 @@ for i in "${!lines[@]}"; do
         # filename.
         block="section block"
         categories+=("${block}")
+    elif [[ "${line}" == "<!-- </section> -->" ]]; then
+        # The line lies denotes the end of the section block.
+        block=""
+        categories+=("section block")
     elif [[ "${line}" == "<!-- <toc title=\""*"\"> -->" \
         || "${line}" == "<!-- <toc> -->" ]]
     then
