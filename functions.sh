@@ -65,3 +65,66 @@ function header_to_link() {
         links[${link}]=0
     fi
 }
+
+function traverse_path() {
+    # Traverse the directory structure between two filepaths.  These may
+    # be given as absolute paths or relative to the same stem directory.
+    # If either is absolute, the traversed filepath is the ending path.
+    #
+    # Arguments:
+    # - $1: the filepath where to start the traversal
+    # - $2: the filepath where to end the traversal
+    #
+    # Nonlocals:
+    # - traversed_path: the traversed filepath
+
+    local directories_end
+    local directories_start
+    local start
+    local end
+
+    # Trim the possibly included trailing slash off both paths.
+    start="${1%/}"
+    end="${2%/}"
+
+    # Return the empty string if both paths are identical, or the ending
+    # path if either is given as absolute path (with a leading slash).
+    if [[ "${start}" == "${end}" ]]; then
+        traversed_path=""
+        return
+    elif [[ "${start::1}" == "/" || "${end::1}" == "/" ]]; then
+        traversed_path="${end}"
+        return
+    fi
+
+    # Read both paths into indexed array by component, slash-delimited.
+    # Remove each common component, until the first difference, then
+    # re-read the arrays to remove the empty indices for the loops
+    # below.
+    IFS="/" read -r -a directories_start <<< "${start}"
+    IFS="/" read -r -a directories_end <<< "${end}"
+
+    i=0
+    while [[ "${directories_start[i]}" == "${directories_end[i]}" ]]; do
+        unset 'directories_start[i]'
+        unset 'directories_end[i]'
+        (( i++ ))
+    done
+    directories_start=("${directories_start[@]}")
+    directories_end=("${directories_end[@]}")
+
+    # Traverse the directory structure.  For each component in the
+    # starting path (without the now removed common components),
+    # excluding the last one (which is the filename of the starting
+    # file), go upwards by one directory.  Then, for each component in
+    # the ending path, excluding the last one, go down by one directory.
+    # Finally, add the filename of the ending file.
+    traversed_path=""
+    for (( i = 0; i < "${#directories_start[@]}" - 1; i++ )); do
+        traversed_path+="../"
+    done
+    for (( i = 0; i < "${#directories_end[@]}" - 1; i++ )); do
+        traversed_path+="${directories_end[i]}/"
+    done
+    traversed_path+="${directories_end[-1]}"
+}
