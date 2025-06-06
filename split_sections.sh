@@ -2,10 +2,10 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-05
+# Last Modification: 2025-06-06
 
 # Usage:
-# bash include_file.sh [--help | --usage | --version] input_file
+# bash split_sections.sh [--help | --usage | --version] input_file
 
 # Purpose: Split the Markdown file by section in different files.
 
