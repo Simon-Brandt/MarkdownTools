@@ -156,10 +156,10 @@ for i in "${!lines[@]}"; do
         # shorten the line and try to match the pattern on the remainder
         # of the line.
         remainder="${line}"
-        while [[ "${remainder}" =~ \[([^\]]*?)\]\(\#[^\)]*?\) ]]; do
+        while [[ "${remainder}" =~ \[[^\]]*?\]\(\#[^\)]*?\) ]]; do
             hyperlink="${BASH_REMATCH[0]}"
             hyperlinks+=("${hyperlink}")
-            remainder="${remainder##*"${hyperlink}"}"
+            remainder="${remainder#*"${hyperlink}"}"
             hyperlink_line_indices+=("${i}")
         done
     fi
