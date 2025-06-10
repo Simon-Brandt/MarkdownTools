@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-05
+# Last Modification: 2025-06-10
 
 # Warning: The script will stage all changes in the Markdown files, not
 # just the table of contents!
@@ -21,6 +21,8 @@ dir="$(git rev-parse --show-toplevel)"
 
 for file in "${files[@]}"; do
     if [[ "${file: -3}" == ".md" ]]; then
+        cd "${file%/*.md}" || exit 1
+
         file="${dir}/${file}"
         bash create_toc.sh \
             --in-place \
@@ -29,6 +31,7 @@ for file in "${files[@]}"; do
             -- \
             "${file}"
         bash include_file.sh "${file}"
-        git add "${file}"
+        bash split_sections.sh "${file}"
+        git add .
     fi
 done
