@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-06
+# Last Modification: 2025-06-10
 
 # Usage:
 # bash split_sections.sh [--help | --usage | --version] input_file
@@ -116,6 +116,7 @@ for i in "${!lines[@]}"; do
         # hyperlink to the previous and next sections, then reset the
         # filename, meaning afterwards not to write to a file.
 
+        # shellcheck disable=SC2016  # Literal backticks.
         # shellcheck disable=SC2094  # Only writing to file and using filename.
         {
             printf '\n'
@@ -124,19 +125,19 @@ for i in "${!lines[@]}"; do
                 # the next section.
                 traverse_path "${file}" "${sections[section_index + 1]}"
                 section="${traversed_path}"
-                printf '[%s&nbsp;&#129094;](%s)\n' "${section}" "${section}"
+                printf '[`%s`&nbsp;&#129094;](%s)\n' "${section}" "${section}"
             elif (( section_index == "${#sections[@]}" - 1 )); then
                 # The section is the last, so print only the link to
                 # the previous section.
                 traverse_path "${file}" "${sections[section_index - 1]}"
                 section="${traversed_path}"
-                printf '[&#129092;&nbsp;%s](%s)\n' "${section}" "${section}"
+                printf '[&#129092;&nbsp;`%s`](%s)\n' "${section}" "${section}"
             else
                 # The section is in-between, so print the links to the
                 # previous and next sections.
                 traverse_path "${file}" "${sections[section_index - 1]}"
                 section="${traversed_path}"
-                printf '[&#129092;&nbsp;%s](%s)\n' "${section}" "${section}"
+                printf '[&#129092;&nbsp;`%s`](%s)\n' "${section}" "${section}"
 
                 for _ in {1..10}; do
                     printf '&nbsp;'
@@ -144,7 +145,7 @@ for i in "${!lines[@]}"; do
 
                 traverse_path "${file}" "${sections[section_index + 1]}"
                 section="${traversed_path}"
-                printf '[%s&nbsp;&#129094;](%s)\n' "${section}" "${section}"
+                printf '[`%s`&nbsp;&#129094;](%s)\n' "${section}" "${section}"
             fi
         } >> "${file}"
 
