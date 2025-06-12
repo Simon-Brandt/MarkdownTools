@@ -2,16 +2,15 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-10
+# Last Modification: 2025-06-11
 
-# Warning: The script will stage all changes in the Markdown files, not
-# just the table of contents!
+# Warning: The script will stage all changes in the Markdown files.
 
-# Run `create_toc.sh` and `include_file.sh` for any Markdown file to be
-# committed.  As `git diff` outputs only the filenames relative to the
-# repository's base directory, switch to this directory, if the script
-# is called from `.git/hooks` and fetch the absolute path of the
-# directory from `git rev-parse` to prepend it to each filename.
+# Run the MarkdownTools for any Markdown file to be committed.
+# As `git diff` outputs only the filenames relative to the repository's
+# base directory, switch to this directory, if the script is called from
+# `.git/hooks` and fetch the absolute path of the directory from
+# `git rev-parse` to prepend it to each filename.
 if [[ "${PWD: -10}" == ".git/hooks" ]]; then
     cd ../.. || exit 1
 fi
@@ -20,18 +19,20 @@ mapfile -t files < <(git diff --cached --name-only HEAD)
 dir="$(git rev-parse --show-toplevel)"
 
 for file in "${files[@]}"; do
-    if [[ "${file: -3}" == ".md" ]]; then
+    if [[ "${file: -3}" != ".md" ]]; then
+        continue
+    elif [[ "${file}" == */* ]]; then
         cd "${file%/*.md}" || exit 1
-
-        file="${dir}/${file}"
-        bash create_toc.sh \
-            --in-place \
-            --exclude-headers="Table of contents" \
-            --exclude-levels=1 \
-            -- \
-            "${file}"
-        bash include_file.sh "${file}"
-        bash split_sections.sh "${file}"
-        git add .
     fi
+
+    file="${dir}/${file}"
+    bash create_toc.sh \
+        --in-place \
+        --exclude-headers="Table of contents" \
+        --exclude-levels=1 \
+        -- \
+        "${file}"
+    bash include_file.sh "${file}"
+    bash split_sections.sh "${file}"
+    git add '*.md'
 done
