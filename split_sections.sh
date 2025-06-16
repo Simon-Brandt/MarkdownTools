@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-10
+# Last Modification: 2025-06-16
 
 # Usage:
 # bash split_sections.sh [--help | --usage | --version] input_file
@@ -32,16 +32,16 @@ fi
 mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
 mapfile -t lines < "${in_file}"
 
-# Get the sections (as filenames) of all headers.  Since upon splitting,
-# they move to different files (perhaps even in different directories),
-# the links in the Markdown file won't work correctly, anymore.  Thus,
-# get all headers and convert their characters to links.  Since these
-# are unique by definition, they can be used as keys of an associative
-# array, mapping all headers to their sections.  This array can then be
-# used to modify the hyperlinks, below.
+# Get the sections (as filenames) of all headings.  Since upon
+# splitting, they move to different files (perhaps even in different
+# directories), the links in the Markdown file won't work correctly,
+# anymore.  Thus, get all headings and convert their characters to
+# links.  Since these are unique by definition, they can be used as keys
+# of an associative array, mapping all headings to their sections.  This
+# array can then be used to modify the hyperlinks, below.
 shopt -s extglob
 
-declare -A header_sections
+declare -A heading_sections
 declare -A links
 sections=( )
 for i in "${!lines[@]}"; do
@@ -52,11 +52,11 @@ for i in "${!lines[@]}"; do
             file="${BASH_REMATCH[1]}"
             sections+=("${file}")
         fi
-    elif [[ "${categories[i]}" == "header"* ]]; then
-        # Convert the header's characters to create a valid link.
-        header="${line}"
-        header_to_link "${header}"
-        header_sections[${link}]="${file}"
+    elif [[ "${categories[i]}" == "heading"* ]]; then
+        # Convert the heading's characters to create a valid link.
+        heading="${line}"
+        heading_to_link "${heading}"
+        heading_sections[${link}]="${file}"
     fi
 done
 
@@ -86,7 +86,7 @@ for i in "${!lines[@]}"; do
                 link="${hyperlink##*\(#}"
                 link="${link%)}"
 
-                traverse_path "${file}" "${header_sections[${link}]}"
+                traverse_path "${file}" "${heading_sections[${link}]}"
                 section="${traversed_path}"
 
                 line="${line/"#${link}"/"${section}#${link}"}"

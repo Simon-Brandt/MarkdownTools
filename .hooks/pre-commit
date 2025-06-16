@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-11
+# Last Modification: 2025-06-16
 
 # Warning: The script will stage all changes in the Markdown files.
 
@@ -28,7 +28,7 @@ for file in "${files[@]}"; do
     file="${dir}/${file}"
     bash create_toc.sh \
         --in-place \
-        --exclude-headers="Table of contents" \
+        --exclude-headings="Table of contents" \
         --exclude-levels=1 \
         -- \
         "${file}"

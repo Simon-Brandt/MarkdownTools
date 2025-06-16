@@ -2,14 +2,14 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-06
+# Last Modification: 2025-06-16
 
 # Usage:
 # bash categorize_lines.sh [--help | --usage | --version] input_file
 
-# Purpose: Categorize a Markdown file's lines to headers, table of
-# contents (TOC) lines, and include directives.  Write these categories
-# to STDOUT.
+# Purpose: Categorize a Markdown file's lines to headings, table of
+# contents (TOC) lines, include directives, and sections.  Write these
+# categories to STDOUT.
 
 # Read and parse the arguments.
 declare in_file
@@ -21,12 +21,12 @@ args=(
 )
 source argparser -- "$@"
 
-# Extract the headers, TOC lines, and include directives, from the input
-# file.  The headers may start with hashmarks ("#") or can be underlined
-# with equals signs ("=") or hyphens ("-").  In fenced or indented code
-# blocks, denoted by three consecutive backticks or tildes, or four
-# leading spaces, respectively, these characters lose their meaning and
-# are not interpreted as the respective tokens.
+# Extract the headings, TOC lines, include directives, and sections from
+# the input file.  The headings may start with hashmarks ("#") or can be
+# underlined with equals signs ("=") or hyphens ("-").  In fenced or
+# indented code blocks, denoted by three consecutive backticks or
+# tildes, or four leading spaces, respectively, these characters lose
+# their meaning and are not interpreted as the respective tokens.
 shopt -s extglob
 
 block=""
@@ -107,26 +107,26 @@ for i in "${!lines[@]}"; do
         block="toc block"
         categories+=("${block}")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
-        # The line is a header, starting with hashmarks, followed by at
+        # The line is a heading, starting with hashmarks, followed by at
         # least one space.  Count the hashmarks, after having removed
         # the leading spaces.
-        header_level=0
-        header="${line##+( )}"
-        while [[ "${header:header_level:1}" == "#" ]]; do
-            (( header_level++ ))
+        heading_level=0
+        heading="${line##+( )}"
+        while [[ "${heading:heading_level:1}" == "#" ]]; do
+            (( heading_level++ ))
         done
 
-        categories+=("header ${header_level}")
+        categories+=("heading ${heading_level}")
     elif [[ ("${line}" == *( )+(=) && "${prev_line}" == *( )[^=\ ]*) ]]; then
         # The line consists of equals signs, but the previous line
         # doesn't start with an equals sign and thus is a first-level
-        # header.
-        categories[-1]="header 1"
+        # heading.
+        categories[-1]="heading 1"
         categories+=("other")
     elif [[ ("${line}" == *( )+(-) && "${prev_line}" == *( )[^-\ ]*) ]]; then
         # The line consists of hyphens, but the previous line doesn't start
-        # with a hyphen and thus is a second-level header.
-        categories[-1]="header 2"
+        # with a hyphen and thus is a second-level heading.
+        categories[-1]="heading 2"
         categories+=("other")
     elif [[ "${line}" =~ \[[^\]]*?\]\(\#[^\)]*?\) ]]; then
         # The line contains at least one hyperlink.

@@ -90,18 +90,18 @@ The first line starts the respective feature block and possibly specifies severa
 
 Note that for TOCs and included files, anything between these tags is *discarded*, since the script assumes that only the TOC or file content may be given, there. Section tags are kept, however, since they delimit the actual contents of your Markdown file.
 
-Upon parsing the Markdown file, the Markdown Tools do their best to implement the rules of [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") to classify (categorize) the lines. Still, the standard is *not* fully implemented, mainly for performance reasons. The Markdown Tools support Markdown headers in ATX style (one to six hashmarks, `#`) or setext style (underlined with `=` or `-`), and respect fenced or indented code blocks. Therein, "headers" (or whatever looks like them, such as Bash comments) are simply ignored. This also holds for the Markdown Tools' special HTML comments, which can safely be given in code blocks.
+Upon parsing the Markdown file, the Markdown Tools do their best to implement the rules of [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") to classify (categorize) the lines. Still, the standard is *not* fully implemented, mainly for performance reasons. The Markdown Tools support Markdown headings in ATX style (one to six hashmarks, `#`) or setext style (underlined with `=` or `-`), and respect fenced or indented code blocks. Therein, "headings" (or whatever looks like them, such as Bash comments) are simply ignored. This also holds for the Markdown Tools' special HTML comments, which can safely be given in code blocks.
 
 ### 3.1. Tables of contents (TOCs)
 
-A table of contents (TOC) serves as quick overview for the user to see which topics a section deals with. The Markdown Tools' `create_toc.sh` script allows for the inclusion of as many TOCs as desired, to be able to summarize all headers within the current header level. It extracts headers from the input Markdown file and converts them into a table of contents with valid hyperlinks.
+A table of contents (TOC) serves as quick overview for the user to see which topics a section deals with. The Markdown Tools' `create_toc.sh` script allows for the inclusion of as many TOCs as desired, to be able to summarize all headings within the current heading level. It extracts headings from the input Markdown file and converts them into a table of contents with valid hyperlinks.
 
 Thereby, `create_toc.sh`
 
-- generates valid, unique hyperlinks for each header for clickable TOCs
+- generates valid, unique hyperlinks for each heading for clickable TOCs
 - adds titles to the TOCs
-- allows excluding certain headers or header levels
-- allows the numbering of headers in a `"1.2.3.4.5.6."` fashion
+- allows excluding certain headings or heading levels
+- allows the numbering of headings in a `"1.2.3.4.5.6."` fashion
 - supports in-place modification of the input file or writing the TOCs to a separate output file
 
 To add the TOC, you need either of the following two HTML comments:
@@ -136,10 +136,10 @@ to write the TOC directly into the input file, modifying it in-place.
 There are several command-line parameters available:
 
 - `-a`, `--add-titles`: add a title to each TOC (default: `true`)
-- `-e`, `--exclude-headers=HEADERS`: comma-separated list of header names to exclude (default: `""`)
-- `-l`, `--exclude-levels=LEVELS`: comma-separated list of header levels to exclude (default: `0`)
+- `-e`, `--exclude-headings=HEADINGS`: comma-separated list of heading names to exclude (default: `""`)
+- `-l`, `--exclude-levels=LEVELS`: comma-separated list of heading levels to exclude (default: `0`)
 - `-i`, `--in-place`: act in-place, writing the TOC to the input file (default: `false`)
-- `-n`, `--number-headers`: number the headers, in a `"1.2.3.4.5.6."` fashion (default: `true`)
+- `-n`, `--number-headings`: number the headings, in a `"1.2.3.4.5.6."` fashion (default: `true`)
 - `-o`, `--out-file=FILE`: the output file to write the TOC to (default: `""`)
 - `-t`, `--titles=TITLES`: the TOC titles to add to the TOCs (default: `"Table of contents"`)
 

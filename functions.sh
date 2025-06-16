@@ -2,29 +2,29 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-06
+# Last Modification: 2025-06-16
 
 # Usage:
 # source functions.sh
 
 # Purpose: Define common functions for the scripts.
 
-function header_to_title() {
-    # Convert a header's characters to create a valid title.
+function heading_to_title() {
+    # Convert a heading's characters to create a valid title.
     #
     # Arguments:
-    # - $1: the header to create the title for
+    # - $1: the heading to create the title for
     #
     # Nonlocals:
     # - title: the created title
 
-    local header
+    local heading
 
     # Remove the leading and trailing spaces, the leading hashmarks and
     # the spaces following them, as well as possibly the number, from
     # the title.
-    header="$1"
-    title="${header}"
+    heading="$1"
+    title="${heading}"
     if [[ "${title}" =~ ^(#+)( )([[:digit:]]+\.)+( )(.*) \
         || "${title}" =~ ^(#+)( )(.*) ]]
     then
@@ -33,21 +33,21 @@ function header_to_title() {
     title="${title%%+( )}"
 }
 
-function header_to_link() {
-    # Convert a header's characters to create a valid link.
+function heading_to_link() {
+    # Convert a heading's characters to create a valid link.
     #
     # Arguments:
-    # - $1: the header to create the link for
+    # - $1: the heading to create the link for
     #
     # Nonlocals:
     # - link: the created link
     # - links: the associative array of all links created, yet
 
-    local header
+    local heading
 
     # Create the link according to the specification.
-    header="$1"
-    link="${header}"
+    heading="$1"
+    link="${heading}"
     link="${link##+(#)}"              # Remove leading hashmarks.
     link="${link##+( )}"              # Remove leading spaces.
     link="${link%%+( )}"              # Remove trailing spaces.

@@ -2,12 +2,12 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-06
+# Last Modification: 2025-06-16
 
 # Usage:
 # bash create_toc.sh [--help | --usage | --version]
 #                    [--add-titles]
-#                    [--exclude-headers=HEADERS...]
+#                    [--exclude-headings=HEADINGS...]
 #                    [--exclude-levels=LEVELS...]
 #                    [--in-place]
 #                    [--out-file=FILE]
@@ -23,21 +23,21 @@ declare out_file
 declare in_place
 declare add_titles
 declare -a toc_titles
-declare number_headers
-declare -a excluded_headers
+declare number_headings
+declare -a excluded_headings
 declare -a excluded_levels
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id               | short_opts | long_opts       | val_names  | defaults          | type | arg_no | arg_group            | help                                             "
-    "in_file          |            |                 | input_file |                   | file |      1 | Positional arguments | the input file from which to get the headers     "
-    "out_file         | o          | out-file        | FILE       | ''                | file |      1 | Options              | the output file to write the TOC to              "
-    "in_place         | i          | in-place        |            | false             | bool |      0 | Options              | act in-place, writing the TOC to the input file  "
-    "add_titles       | a          | add-titles      |            | true              | bool |      0 | Options              | add a title to each TOC                          "
-    "toc_titles       | t          | titles          |            | Table of contents | str  |      + | Options              | the TOC titles to add to the TOCs                "
-    "number_headers   | n          | number-headers  |            | true              | bool |      0 | Options              | number the headers, in a \"1.2.3.4.5.6.\" fashion"
-    "excluded_headers | e          | exclude-headers | HEADERS    | ''                | str  |      + | Options              | comma-separated list of header names to exclude  "
-    "excluded_levels  | l          | exclude-levels  | LEVELS     | 0                 | uint |      + | Options              | comma-separated list of header levels to exclude "
+    "id                | short_opts | long_opts        | val_names  | defaults          | type | arg_no | arg_group            | help                                              "
+    "in_file           |            |                  | input_file |                   | file |      1 | Positional arguments | the input file from which to get the headings     "
+    "out_file          | o          | out-file         | FILE       | ''                | file |      1 | Options              | the output file to write the TOC to               "
+    "in_place          | i          | in-place         |            | false             | bool |      0 | Options              | act in-place, writing the TOC to the input file   "
+    "add_titles        | a          | add-titles       |            | true              | bool |      0 | Options              | add a title to each TOC                           "
+    "toc_titles        | t          | titles           |            | Table of contents | str  |      + | Options              | the TOC titles to add to the TOCs                 "
+    "number_headings   | n          | number-headings  |            | true              | bool |      0 | Options              | number the headings, in a \"1.2.3.4.5.6.\" fashion"
+    "excluded_headings | e          | exclude-headings | HEADINGS   | ''                | str  |      + | Options              | comma-separated list of heading names to exclude  "
+    "excluded_levels   | l          | exclude-levels   | LEVELS     | 0                 | uint |      + | Options              | comma-separated list of heading levels to exclude "
 )
 source argparser -- "$@"
 
@@ -66,7 +66,7 @@ fi
 # Source the functions.
 source functions.sh
 
-# Get the excluded header levels and compute the included ones.
+# Get the excluded heading levels and compute the included ones.
 included_levels=( )
 for included_level in 1 2 3 4 5 6; do
     for excluded_level in "${excluded_levels[@]}"; do
@@ -87,12 +87,12 @@ fi
 mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
 mapfile -t lines < "${in_file}"
 
-# Get the table-of-contents blocks, headers, and hyperlinks.
+# Get the table-of-contents blocks, headings, and hyperlinks.
 shopt -s extglob
 
-headers=( )
-header_levels=( )
-header_line_indices=( )
+headings=( )
+heading_levels=( )
+heading_line_indices=( )
 hyperlinks=( )
 hyperlink_line_indices=( )
 
@@ -103,7 +103,7 @@ toc_ends=( )
 
 for i in "${!lines[@]}"; do
     if [[ "${categories[i]}" != "toc block" \
-        && "${categories[i]}" != "header"* \
+        && "${categories[i]}" != "heading"* \
         && "${categories[i]}" != "hyperlink" ]]
     then
         continue
@@ -136,21 +136,22 @@ for i in "${!lines[@]}"; do
             # The line denotes the end of the table-of-contents block.
             toc_ends+=("${i}")
         fi
-    elif [[ "${categories[i]}" == "header"* ]]; then
-        # The line is a header.  Get the header level and prepend as
-        # many hashmarks as the header level to the hashmark-stripped
-        # header to set ATX and setext headers to the same (ATX) style.
-        header_line_indices+=("${i}")
-        header_level="${categories[i]##* }"
-        header_levels+=("${header_level}")
-        (( toc_level = header_level + 1 ))
+    elif [[ "${categories[i]}" == "heading"* ]]; then
+        # The line is a heading.  Get the heading level and prepend as
+        # many hashmarks as the heading level to the hashmark-stripped
+        # heading to set ATX and setext headings to the same (ATX)
+        # style.
+        heading_line_indices+=("${i}")
+        heading_level="${categories[i]##* }"
+        heading_levels+=("${heading_level}")
+        (( toc_level = heading_level + 1 ))
 
-        header="${line##+( )}"
-        header="${header##+(\#)}"
-        for (( j = 1; j <= header_level; j++ )); do
-            header="#${header}"
+        heading="${line##+( )}"
+        heading="${heading##+(\#)}"
+        for (( j = 1; j <= heading_level; j++ )); do
+            heading="#${heading}"
         done
-        headers+=("${header}")
+        headings+=("${heading}")
     elif [[ "${categories[i]}" == "hyperlink" ]]; then
         # The line contains at least one hyperlink. Extract it, then
         # shorten the line and try to match the pattern on the remainder
@@ -165,140 +166,141 @@ for i in "${!lines[@]}"; do
     fi
 done
 
-# Create the links for the currently old (unmodified) headers.  Since
+# Create the links for the currently old (unmodified) headings.  Since
 # the numbering may change, so does the link, which then needs to be
 # updated, below.  To this end, store the old links in an indexed array.
 declare -A links
-old_header_links=( )
-for header in "${headers[@]}"; do
-    header_to_link "${header}"
-    old_header_links+=("${link}")
+old_heading_links=( )
+for heading in "${headings[@]}"; do
+    heading_to_link "${heading}"
+    old_heading_links+=("${link}")
 done
 unset links
 
-# Generate numbers for the headers.
+# Generate numbers for the headings.
 numbers=( )
-header_level_counts=( )
-prev_header_level=0
-for i in "${!headers[@]}"; do
-    # Get the header level.  If it shall be excluded, skip it.
-    header_level="${header_levels[i]}"
+heading_level_counts=( )
+prev_heading_level=0
+for i in "${!headings[@]}"; do
+    # Get the heading level.  If it shall be excluded, skip it.
+    heading_level="${heading_levels[i]}"
     for excluded_level in "${excluded_levels[@]}"; do
-        if [[ "${header_level}" == "${excluded_level}" ]]; then
+        if [[ "${heading_level}" == "${excluded_level}" ]]; then
             numbers+=("")
             continue 2
         fi
     done
 
-    # If the header level is lower than the previous one, reset the
+    # If the heading level is lower than the previous one, reset the
     # count in the previous level.  Increment the current level's count.
-    if (( header_level < prev_header_level )); then
-        for (( j = header_level + 1; j <= prev_header_level; j++ )); do
-            (( header_level_counts[j] = 0 ))
+    if (( heading_level < prev_heading_level )); then
+        for (( j = heading_level + 1; j <= prev_heading_level; j++ )); do
+            (( heading_level_counts[j] = 0 ))
         done
     fi
-    (( header_level_counts[header_level]++ ))
+    (( heading_level_counts[heading_level]++ ))
 
     # Generate the number in a "1.2.3.4.5.6." fashion, depending on the
-    # header level (i.e., only use as many numbers as the header level).
-    # Don't assign numbers for skipped (excluded) levels.
+    # heading level (i.e., only use as many numbers as the heading
+    # level).  Don't assign numbers for skipped (excluded) levels.
     number=""
     for included_level in "${included_levels[@]}"; do
-        if (( included_level <= header_level )); then
-            number+="${header_level_counts[included_level]:-1}."
+        if (( included_level <= heading_level )); then
+            number+="${heading_level_counts[included_level]:-1}."
         fi
     done
     numbers+=("${number}")
-    prev_header_level="${header_level}"
+    prev_heading_level="${heading_level}"
 done
 
-# Add the numbers to the headers, possibly replacing the previous
+# Add the numbers to the headings, possibly replacing the previous
 # number.
-if [[ "${number_headers}" == true ]]; then
-    for i in "${!headers[@]}"; do
+if [[ "${number_headings}" == true ]]; then
+    for i in "${!headings[@]}"; do
         if [[ -n "${numbers[i]}" \
-            && ("${headers[i]}" =~ ^(#+)( )([[:digit:]]+\.)+( )(.*) \
-                || "${headers[i]}" =~ ^(#+)( )(.*)) ]]
+            && ("${headings[i]}" =~ ^(#+)( )([[:digit:]]+\.)+( )(.*) \
+                || "${headings[i]}" =~ ^(#+)( )(.*)) ]]
         then
-            headers[i]="${BASH_REMATCH[1]} ${numbers[i]} ${BASH_REMATCH[-1]}"
+            headings[i]="${BASH_REMATCH[1]} ${numbers[i]} ${BASH_REMATCH[-1]}"
         fi
     done
 fi
 
-# Create the links for the new (modified) headers and store them in an
+# Create the links for the new (modified) headings and store them in an
 # indexed array.
 declare -A links
-new_header_links=( )
-for header in "${headers[@]}"; do
-    header_to_link "${header}"
-    new_header_links+=("${link}")
+new_heading_links=( )
+for heading in "${headings[@]}"; do
+    heading_to_link "${heading}"
+    new_heading_links+=("${link}")
 done
 unset links
 
-# Map the old header links to the new header links for later replacement
-# in the hyperlinks.  Since the old links may have already been numbered
-# or are still unnumbered, save also an unnumbered version.
+# Map the old heading links to the new heading links for later
+# replacement in the hyperlinks.  Since the old links may have already
+# been numbered or are still unnumbered, save also an unnumbered
+# version.
 declare -A numbered_replacement_links
 declare -A unnumbered_replacement_links
-for i in "${!old_header_links[@]}"; do
-    old_header_link="${old_header_links[i]}"
-    numbered_replacement_links[${old_header_link}]="${new_header_links[i]}"
+for i in "${!old_heading_links[@]}"; do
+    old_heading_link="${old_heading_links[i]}"
+    numbered_replacement_links[${old_heading_link}]="${new_heading_links[i]}"
 
-    old_header_link="${old_header_links[i]#+([[:digit:]])-}"
-    unnumbered_replacement_links[${old_header_link}]="${new_header_links[i]}"
+    old_heading_link="${old_heading_links[i]#+([[:digit:]])-}"
+    unnumbered_replacement_links[${old_heading_link}]="${new_heading_links[i]}"
 done
 
 # Create the tables of contents.
 tocs=( )
 for i in "${!toc_levels[@]}"; do
-    # Get all headers with the same or higher level, starting from the
+    # Get all headings with the same or higher level, starting from the
     # current table of content's end line index.
     toc_level="${toc_levels[i]}"
     toc_end="${toc_ends[i]}"
-    toc_headers=( )
-    toc_header_levels=( )
-    for j in "${!headers[@]}"; do
-        if (( "${header_line_indices[j]}" > toc_end )); then
-            if (( "${header_levels[j]}" < toc_level )); then
+    toc_headings=( )
+    toc_heading_levels=( )
+    for j in "${!headings[@]}"; do
+        if (( "${heading_line_indices[j]}" > toc_end )); then
+            if (( "${heading_levels[j]}" < toc_level )); then
                 break
             fi
-            toc_headers+=("${headers[j]}")
-            toc_header_levels+=("${header_levels[j]}")
+            toc_headings+=("${headings[j]}")
+            toc_heading_levels+=("${heading_levels[j]}")
         fi
     done
 
-    # Possibly, add the current table of contents' header to the array.
-    # The actual header is added afterwards, such that the indentation
+    # Possibly, add the current table of contents' heading to the array.
+    # The actual heading is added afterwards, such that the indentation
     # of the list items in the table of contents can be correctly
-    # computed, without interfering with the header.
+    # computed, without interfering with the heading.
     if [[ "${add_titles}" == true ]]; then
-        printf -v toc_header '%*s' "${toc_level}" ""
-        toc_header="${toc_header// /#} ${toc_titles[i]:-"${toc_titles[0]}"}"
-        toc_headers=("${toc_header}" "${toc_headers[@]}")
+        printf -v toc_heading '%*s' "${toc_level}" ""
+        toc_heading="${toc_heading// /#} ${toc_titles[i]:-"${toc_titles[0]}"}"
+        toc_headings=("${toc_heading}" "${toc_headings[@]}")
 
-        toc_header_levels=("${toc_level}" "${toc_header_levels[@]}")
+        toc_heading_levels=("${toc_level}" "${toc_heading_levels[@]}")
     fi
 
-    # Create the current table of contents, converting all headers
+    # Create the current table of contents, converting all headings
     # belonging to it to valid hyperlinks.
     toc_lines=( )
     declare -A links
-    for j in "${!toc_headers[@]}"; do
-        # Get the header level.  If it shall be excluded, skip it.
+    for j in "${!toc_headings[@]}"; do
+        # Get the heading level.  If it shall be excluded, skip it.
         for excluded_level in "${excluded_levels[@]}"; do
-            if [[ "${toc_header_levels[j]}" == "${excluded_level}" ]]; then
+            if [[ "${toc_heading_levels[j]}" == "${excluded_level}" ]]; then
                 continue 2
             fi
         done
 
-        # Convert the header to a title suitable for the table of
+        # Convert the heading to a title suitable for the table of
         # contents.
-        header="${toc_headers[j]}"
-        header_to_title "${header}"
+        heading="${toc_headings[j]}"
+        heading_to_title "${heading}"
 
-        # If the header name shall be excluded, skip it.
-        for excluded_header in "${excluded_headers[@]}"; do
-            if [[ "${title}" == "${excluded_header}" ]]; then
+        # If the heading name shall be excluded, skip it.
+        for excluded_heading in "${excluded_headings[@]}"; do
+            if [[ "${title}" == "${excluded_heading}" ]]; then
                 continue 2
             fi
         done
@@ -309,19 +311,19 @@ for i in "${!toc_levels[@]}"; do
             fi
         done
 
-        # Create the required list item indentation per header level and
-        # set the list marker.
-        if [[ "${number_headers}" == true ]]; then
+        # Create the required list item indentation per heading level
+        # and set the list marker.
+        if [[ "${number_headings}" == true ]]; then
             marker="1."
-            (( count = "${toc_header_levels[j]}" * 3 ))
+            (( count = "${toc_heading_levels[j]}" * 3 ))
         else
             marker="-"
-            (( count = "${toc_header_levels[j]}" * 2 ))
+            (( count = "${toc_heading_levels[j]}" * 2 ))
         fi
         printf -v indentation '%*s' "${count}" ""
 
-        # Convert the header's characters to create a valid link.
-        header_to_link "${header}"
+        # Convert the heading's characters to create a valid link.
+        heading_to_link "${heading}"
 
         # Add the resultant line to the table of contents.
         toc_line="${indentation}${marker} [${title}](#${link})"
@@ -335,9 +337,9 @@ for i in "${!toc_levels[@]}"; do
 
     # Get the common indentation depth of all table of contents' lines,
     # and strip this.  Start with the mMaximum possible indentation for
-    # the header level h6, which is 18 for numbered and 12 for bulleted
+    # the heading level h6, which is 18 for numbered and 12 for bulleted
     # lists.
-    if [[ "${number_headers}" == true ]]; then
+    if [[ "${number_headings}" == true ]]; then
         common_indentation=18
     else
         common_indentation=12
@@ -358,10 +360,11 @@ for i in "${!toc_levels[@]}"; do
         toc_lines[j]="${toc_lines[j]##"${indentation}"}"
     done
 
-    # Possibly, add now the current table of contents' header, including
-    # a trailing blank line (using an empty string in the array).
+    # Possibly, add now the current table of contents' heading,
+    # including a trailing blank line (using an empty string in the
+    # array).
     if [[ "${add_titles}" == true ]]; then
-        toc_lines=("${toc_header}" "" "${toc_lines[@]}")
+        toc_lines=("${toc_heading}" "" "${toc_lines[@]}")
     fi
 
     # Join the table of contents lines by newline characters and append
@@ -371,13 +374,13 @@ done
 
 # Write the lines to the output.
 if [[ "${in_place}" == true ]] && (( "${#tocs[@]}" > 0 )); then
-    # Possibly, replace the (now correctly numbered) headers and their
+    # Possibly, replace the (now correctly numbered) headings and their
     # corresponding hyperlinks in the Markdown file.
-    if [[ "${number_headers}" == true ]]; then
-        # Replace the headers.
+    if [[ "${number_headings}" == true ]]; then
+        # Replace the headings.
         i=0
-        for j in "${header_line_indices[@]}"; do
-            lines[j]="${headers[i]}"
+        for j in "${heading_line_indices[@]}"; do
+            lines[j]="${headings[i]}"
             (( i++ ))
         done
 
