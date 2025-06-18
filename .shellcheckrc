@@ -1,6 +1,6 @@
 # Look for sourced files relative to the checked script.
 source-path=SCRIPTDIR
-source-path=SCRIPTDIR/../bash_argparser
+source-path=SCRIPTDIR/../ShellArgparser
 
 # Allow opening any sourced file, even if not specified as input.
 external-sources=true
