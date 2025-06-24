@@ -30,8 +30,13 @@ source "${directory}/categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
 # Include the files and command outputs.
+is_normal_include_block=false
 for i in "${!lines[@]}"; do
-    if [[ "${categories[i]}" != "include block" ]]; then
+    if [[ "${categories[i]}" == "normal include block" ]]; then
+        is_normal_include_block=true
+    elif [[ "${categories[i]}" != *"include block" \
+        && "${is_normal_include_block}" == false ]]
+    then
         continue
     fi
 
@@ -95,9 +100,11 @@ for i in "${!lines[@]}"; do
         if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
             lines[i]="${lines[i]//$'\n'/& }"
         fi
-    elif [[ "${line}" != "<!-- </include> -->" ]]; then
-        # The line contains the previously included file's contents and
-        # does not denote the end of the include block.
+    elif [[ "${line}" == "<!-- </include> -->" ]]; then
+        # The line denotes the end of the include block.
+        is_normal_include_block=false
+    else
+        # The line contains the previously included file's contents.
         unset 'lines[i]'
     fi
 done

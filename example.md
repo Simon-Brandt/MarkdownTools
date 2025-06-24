@@ -1,5 +1,5 @@
 # Include directive example
 
-<!-- <include command="printf '%s\n' "Included file contents will be given here.""> -->
-Included file contents will be given here.
+<!-- <include command="printf '%s\n' "This line has been included.""> -->
+This line has been included.
 <!-- </include> -->

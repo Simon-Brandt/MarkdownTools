@@ -16,7 +16,8 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
 1. [Usage](#3-usage)
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
    1. [Include directives](#32-include-directives)
-   1. [Sections](#33-sections)
+   1. [Include directive example](#33-include-directive-example)
+   1. [Sections](#34-sections)
 1. [Pre-commit hook](#4-pre-commit-hook)
 <!-- </toc> -->
 
@@ -151,7 +152,7 @@ To this end, `include_file.sh`
 
 - includes a file's contents
 - runs commands and captures their STDOUT and STDERR
-- surrounds the data with a fenced code block
+- optionally surrounds the data with a fenced code block
 - supports language specifications as identifier for the fenced code block for syntax highlighting by an appropriate Markdown renderer
 - includes the command as first line *iff* the language specification is `console`, and precedes it by a `$` and space.
 
@@ -170,7 +171,7 @@ followed by the closing tag
 <!-- </include> -->
 ```
 
-The former two versions include a file, the latter two the command's output (STDOUT and STDERR). The second and fourth form add a language identifier.
+The former two versions include a file, the latter two the command's output (STDOUT and STDERR). The second and fourth form put the output in a fenced code block and add a language identifier.
 
 Then, run `include_file.sh` on your Markdown file, which will include the file or command output between these two HTML tags. The inclusion is always in-place, so the command simply is:
 
@@ -201,28 +202,37 @@ printf "Hello, world!\n"
 
 So, we have the file included, surrounded by a fenced code block and using Bash syntax highlighting.
 
-Likewise, we could include the raw contents of a Markdown file (here [`example.md`](example.md)), but this time using a command ([`head`](https://man7.org/linux/man-pages/man1/head.1.html "man7.org &rightarrow; man pages &rightarrow; head(1)")):
+Likewise, we could include the contents of a Markdown file (here [`example.md`](example.md)), but this time using a command ([`sed`](https://man7.org/linux/man-pages/man1/sed.1.html "man7.org &rightarrow; man pages &rightarrow; sed(1)")):
 
 ```markdown
-<!-- <include command="head --lines=10 example.md" lang="markdown"> -->
-<!-- </include> -->
+<!-- <include command="sed 's/^#/###/' example.md"> -->
 ```
 
-This includes `head`'s output verbatim in a fenced code block, with Markdown syntax highlighting:
+This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
-<!-- <include command="head --lines=10 example.md" lang="markdown"> -->
- ```markdown
- # Include directive example
+<!-- <include command="sed 's/^#/###/' example.md"> -->
+ ### Include directive example
  
- <!-- <include command="printf '%s\n' "Included file contents will be given here.""> -->
- Included file contents will be given here.
+ <!-- <include command="printf '%s\n' "This line has been included.""> -->
+ This line has been included.
+ <!-- </include> -->
+<!-- </include> -->
+
+In the raw view, you can see that the Markdown file contains another include directive (interpreted by running `include_file.sh` on `example.md`):
+
+<!-- <include command="sed 's/^#/##/' example.md" lang="markdown"> -->
+ ```markdown
+ ## Include directive example
+ 
+ <!-- <include command="printf '%s\n' "This line has been included.""> -->
+ This line has been included.
  <!-- </include> -->
 ```
 <!-- </include> -->
 
-As you can see, the Markdown file contains another include directive (interpreted by running `include_file.sh` on `example.md`), to show that you don't need to (and must not) escape potential quotes in your command. Since the include directive in the file must not be interpreted upon parsing the README, it is indented by one space. However, as this is not visible in the rendered view, just in the raw file, you shouldn't need to care about it.
+This shows that you don't need to (and must not) escape potential quotes in your command. Further, since the include directive in the file must not be interpreted upon parsing the README, it is indented by one space. However, as this is not visible in the rendered view, just in the raw file, you shouldn't need to care about it.
 
-### 3.3. Sections
+### 3.4. Sections
 
 For larger software, the documentation may grow to a point where it becomes unhandy for the reader to have everything kept in the same file. While it may still be advantageous to write the documentation in one single file (like for ease of cross-referencing sections), the reader might better obtain the documentation in separate files. To this end, the Markdown Tools' `split_sections.sh` script supports section tags, with which you can group sections. Any text between an opening and closing section tag will be output into a distinct file (possibly inside a subdirectory).
 

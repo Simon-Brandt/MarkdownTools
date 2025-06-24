@@ -46,13 +46,6 @@ for line in "${lines[@]}"; do
             block=""
         fi
         categories+=("indented code block")
-    elif [[ "${block}" == "include block" ]]; then
-        # The line lies within an include block and may only end it by
-        # the </include> comment.
-        if [[ "${line}" == "<!-- </include> -->" ]]; then
-            block=""
-        fi
-        categories+=("include block")
     elif [[ "${block}" == "toc block" ]]; then
         # The line lies within a table of contents and may only end it
         # by the </toc> comment.
@@ -60,6 +53,13 @@ for line in "${lines[@]}"; do
             block=""
         fi
         categories+=("toc block")
+    elif [[ "${block}" == "verbatim include block" ]]; then
+        # The line lies within a verbatim include block and may only end
+        # it by the </include> comment.
+        if [[ "${line}" == "<!-- </include> -->" ]]; then
+            block=""
+        fi
+        categories+=("verbatim include block")
     elif [[ "${line}" == "\`\`\`"* ]]; then
         # The line starts a fenced code block using backticks.
         block="fenced code block backtick"
@@ -71,15 +71,25 @@ for line in "${lines[@]}"; do
     elif [[ "${line}" == "    "[^*+-]* && -z "${prev_line}" ]]; then
         # The line starts an indented code block.
         block="indented code block"
-        categories+=("indented code block")
-    elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" \
-        || "${line}" == "<!-- <include command=\""*"\"> -->" \
-        || "${line}" == "<!-- <include> -->" ]]
-    then
-        # The line denotes the start of the include block and may
-        # contain a filename or command.
-        block="include block"
         categories+=("${block}")
+    elif [[ "${line}" == "<!-- <include file=\""*"\" lang=\""*"\"> -->" \
+        || "${line}" == "<!-- <include command=\""*"\" lang=\""*"\"> -->" ]]
+    then
+        # The line denotes the start of the verbatim include block and
+        # contains a filename or command, and a langauge specification.
+        block="verbatim include block"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" \
+        || "${line}" == "<!-- <include command=\""*"\"> -->" ]]
+    then
+        # The line denotes the start of the normal include block and
+        # contains a filename or command.
+        block="normal include block"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- </include> -->" ]]; then
+        # The line denotes the end of a normal include block.
+        block=""
+        categories+=("normal include block")
     elif [[ "${line}" == "<!-- <section file=\""*"\"> -->" ]]; then
         # The line denotes the start of the section block and contains a
         # filename.
