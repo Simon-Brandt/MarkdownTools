@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-16
+# Last Modification: 2025-06-24
 
 # Warning: The script will stage all changes in the Markdown files.
 
@@ -33,6 +33,13 @@ for file in "${files[@]}"; do
         -- \
         "${file}"
     bash include_file.sh "${file}"
+    bash create_toc.sh \
+        --in-place \
+        --exclude-headings="Table of contents" \
+        --exclude-levels=1 \
+        -- \
+        "${file}"
     bash split_sections.sh "${file}"
+
     git add '*.md'
 done

@@ -211,7 +211,7 @@ Likewise, we could include the contents of a Markdown file (here [`example.md`](
 This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
 <!-- <include command="sed 's/^#/###/' example.md"> -->
- ### Include directive example
+### 3.3. Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
  This line has been included.
