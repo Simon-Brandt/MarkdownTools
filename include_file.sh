@@ -21,12 +21,12 @@ source argparser -- "$@"
 
 # Categorize the lines.
 if [[ "${BASH_SOURCE[0]}" == */* ]]; then
-    directory="${BASH_SOURCE[0]%/*}/"
+    directory="${BASH_SOURCE[0]%/*}"
 else
-    directory=""
+    directory="."
 fi
 
-source "${directory}categorize_lines.sh" "${in_file}"
+source "${directory}/categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
 # Include the files and command outputs.

@@ -21,13 +21,13 @@ source argparser -- "$@"
 
 # Source the functions and categorize the lines.
 if [[ "${BASH_SOURCE[0]}" == */* ]]; then
-    directory="${BASH_SOURCE[0]%/*}/"
+    directory="${BASH_SOURCE[0]%/*}"
 else
-    directory=""
+    directory="."
 fi
 
-source "${directory}functions.sh"
-source "${directory}categorize_lines.sh" "${in_file}"
+source "${directory}/functions.sh"
+source "${directory}/categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
 # Get the sections (as filenames) of all headings.  Since upon
