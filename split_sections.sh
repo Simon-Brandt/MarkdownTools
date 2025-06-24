@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-16
+# Last Modification: 2025-06-24
 
 # Usage:
 # bash split_sections.sh [--help | --usage | --version] input_file
@@ -19,17 +19,15 @@ args=(
 )
 source argparser -- "$@"
 
-# Source the functions.
-source functions.sh
-
-# Categorize the lines.
+# Source the functions and categorize the lines.
 if [[ "${BASH_SOURCE[0]}" == */* ]]; then
     directory="${BASH_SOURCE[0]%/*}/"
 else
     directory=""
 fi
 
-mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
+source "${directory}functions.sh"
+source "${directory}categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
 # Get the sections (as filenames) of all headings.  Since upon

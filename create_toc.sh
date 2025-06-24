@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-16
+# Last Modification: 2025-06-24
 
 # Usage:
 # bash create_toc.sh [--help | --usage | --version]
@@ -63,8 +63,16 @@ if [[ "${out_file}" != "''" && "${in_place}" == true ]]; then
     exit 1
 fi
 
-# Source the functions.
-source functions.sh
+# Source the functions and categorize the lines.
+if [[ "${BASH_SOURCE[0]}" == */* ]]; then
+    directory="${BASH_SOURCE[0]%/*}/"
+else
+    directory=""
+fi
+
+source "${directory}functions.sh"
+source "${directory}categorize_lines.sh" "${in_file}"
+mapfile -t lines < "${in_file}"
 
 # Get the excluded heading levels and compute the included ones.
 included_levels=( )
@@ -76,16 +84,6 @@ for included_level in 1 2 3 4 5 6; do
     done
     included_levels+=("${included_level}")
 done
-
-# Categorize the lines.
-if [[ "${BASH_SOURCE[0]}" == */* ]]; then
-    directory="${BASH_SOURCE[0]%/*}/"
-else
-    directory=""
-fi
-
-mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
-mapfile -t lines < "${in_file}"
 
 # Get the table-of-contents blocks, headings, and hyperlinks.
 shopt -s extglob

@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-16
+# Last Modification: 2025-06-24
 
 # Usage:
 # bash categorize_lines.sh [--help | --usage | --version] input_file
@@ -10,16 +10,6 @@
 # Purpose: Categorize a Markdown file's lines to headings, table of
 # contents (TOC) lines, include directives, and sections.  Write these
 # categories to STDOUT.
-
-# Read and parse the arguments.
-declare in_file
-
-# shellcheck disable=SC2190  # Indexed, not associative array.
-args=(
-    "id      | val_names  | type | arg_no | arg_group            | help                   "
-    "in_file | input_file | file |      1 | Positional arguments | the input Markdown file"
-)
-source argparser -- "$@"
 
 # Extract the headings, TOC lines, include directives, and sections from
 # the input file.  The headings may start with hashmarks ("#") or can be
@@ -31,10 +21,10 @@ shopt -s extglob
 
 block=""
 categories=( )
+: "${in_file:-}"
 
 mapfile -t lines < "${in_file}"
-for i in "${!lines[@]}"; do
-    line="${lines[i]}"
+for line in "${lines[@]}"; do
     if [[ "${block}" == "fenced code block backtick" ]]; then
         # The line lies within a fenced code block and may only end it
         # by three backticks.
@@ -136,6 +126,3 @@ for i in "${!lines[@]}"; do
     fi
     prev_line="${line}"
 done
-
-# Output the categories.
-printf '%s\n' "${categories[@]}"

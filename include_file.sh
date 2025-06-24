@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-05
+# Last Modification: 2025-06-24
 
 # Usage:
 # bash include_file.sh [--help | --usage | --version] input_file
@@ -26,7 +26,7 @@ else
     directory=""
 fi
 
-mapfile -t categories < <(bash "${directory}categorize_lines.sh" "${in_file}")
+source "${directory}categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
 # Include the files and command outputs.
