@@ -20,7 +20,7 @@ function get_link_text() {
     # - $1: the section to create the link text for
     # - $2: the current file
     #
-    # Nonlocals:
+    # Globals:
     # - link_text: the created link text
     # - link_to_files: whether to use the section's filename for the
     #   link text (read-only)

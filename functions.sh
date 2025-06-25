@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-16
+# Last Modification: 2025-06-25
 
 # Usage:
 # source functions.sh
@@ -15,7 +15,7 @@ function heading_to_title() {
     # Arguments:
     # - $1: the heading to create the title for
     #
-    # Nonlocals:
+    # Globals:
     # - title: the created title
 
     local heading
@@ -39,7 +39,7 @@ function heading_to_link() {
     # Arguments:
     # - $1: the heading to create the link for
     #
-    # Nonlocals:
+    # Globals:
     # - link: the created link
     # - links: the associative array of all links created, yet
 
@@ -75,7 +75,7 @@ function traverse_path() {
     # - $1: the filepath where to start the traversal
     # - $2: the filepath where to end the traversal
     #
-    # Nonlocals:
+    # Globals:
     # - traversed_path: the traversed filepath
 
     local directories_end
