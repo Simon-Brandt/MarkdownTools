@@ -2,15 +2,14 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-24
+# Last Modification: 2025-06-25
 
 # Usage:
 # bash create_toc.sh [--help | --usage | --version]
 #                    [--add-titles]
 #                    [--exclude-headings=HEADINGS...]
 #                    [--exclude-levels=LEVELS...]
-#                    [--in-place]
-#                    [--out-file=FILE]
+#                    [--in-place | --out-file=FILE]
 #                    [--titles=TITLES]
 #                    input_file
 
