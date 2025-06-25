@@ -95,7 +95,7 @@ Upon parsing the Markdown file, the Markdown Tools do their best to implement th
 
 ### 3.1. Tables of contents (TOCs)
 
-A table of contents (TOC) serves as quick overview for the user to see which topics a section deals with. The Markdown Tools' `create_toc.sh` script allows for the inclusion of as many TOCs as desired, to be able to summarize all headings within the current heading level. It extracts headings from the input Markdown file and converts them into a table of contents with valid hyperlinks.
+A table of contents (TOC) serves as quick overview for the user to see which topics a section deals with. The Markdown Tools' [`create_toc.sh`](create_toc.sh) script allows for the inclusion of as many TOCs as desired, to be able to summarize all headings within the current heading level. It extracts headings from the input Markdown file and converts them into a table of contents with valid hyperlinks.
 
 Thereby, `create_toc.sh`
 
@@ -123,13 +123,13 @@ The first version adds the next title from the command line to the TOC, while th
 Then, run `create_toc.sh` on your Markdown file, which will create the table of contents between these two HTML tags. You may either run
 
 ```bash
-create_toc.sh --out-file=<out_file.md> <in_file.md>
+create_toc.sh --out-file=<out_file.md> -- <in_file.md>
 ```
 
 to get the resultant Markdown file written to `<out_file.md>`, or you can run
 
 ```bash
-create_toc.sh --in-place <in_file.md>
+create_toc.sh --in-place -- <in_file.md>
 ```
 
 to write the TOC directly into the input file, modifying it in-place.
@@ -146,7 +146,7 @@ There are several command-line parameters available:
 
 ### 3.2. Include directives
 
-When *e.g.* showing the output of a certain command to be documented, one needs to keep the command's functionality and its documentation in sync. Therefore, the Markdown Tools' `include_file.sh` script includes other files, or the output of commands, in the Markdown file using an include directive.
+When *e.g.* showing the output of a certain command to be documented, one needs to keep the command's functionality and its documentation in sync. Therefore, the Markdown Tools' [`include_file.sh`](include_file.sh) script includes other files, or the output of commands, in the Markdown file using an include directive.
 
 To this end, `include_file.sh`
 
@@ -220,9 +220,9 @@ This includes `sed`'s output as normal Markdown, which is then interpreted by th
 
 In the raw view, you can see that the Markdown file contains another include directive (interpreted by running `include_file.sh` on `example.md`):
 
-<!-- <include command="sed 's/^#/##/' example.md" lang="markdown"> -->
+<!-- <include command="sed 's/^#/###/' example.md" lang="markdown"> -->
  ```markdown
- ## Include directive example
+ ### Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
  This line has been included.
@@ -234,14 +234,14 @@ This shows that you don't need to (and must not) escape potential quotes in your
 
 ### 3.4. Sections
 
-For larger software, the documentation may grow to a point where it becomes unhandy for the reader to have everything kept in the same file. While it may still be advantageous to write the documentation in one single file (like for ease of cross-referencing sections), the reader might better obtain the documentation in separate files. To this end, the Markdown Tools' `split_sections.sh` script supports section tags, with which you can group sections. Any text between an opening and closing section tag will be output into a distinct file (possibly inside a subdirectory).
+For larger software, the documentation may grow to a point where it becomes unhandy for the reader to have everything kept in the same file. While it may still be advantageous to write the documentation in one single file (like for ease of cross-referencing sections), the reader might better obtain the documentation in separate files. To this end, the Markdown Tools' [`split_sections.sh`](split_sections.sh) script supports section tags, with which you can group sections. Any text between an opening and closing section tag will be output into a distinct file (possibly inside a subdirectory).
 
 Thereby, `split_sections.sh`
 
 - splits a Markdown file by section into separate files
 - updates any hyperlink in the split files to point to the novel file the referred section has moved to
 - possibly removes and re-creates the files' directories, such that within directories other than the CWD, only current files are located (and no files from former runs, after which you re-named a section)
-- appends a link to the previous and/or next section to each file, creating a contiguous documentation.
+- appends a link to the previous and/or next section to each file (using the first heading or filename as link text), creating a contiguous documentation
 
 To split a file, you need the following two HTML comments:
 
@@ -250,11 +250,21 @@ To split a file, you need the following two HTML comments:
 <!-- </section> -->
 ```
 
-Then, run `split_sections.sh` on your Markdown file, which will split the file into sections, delimited by these two HTML tags. Since no change to the input file happens, the command simply is:
+Then, run `split_sections.sh` on your Markdown file, which will split the file into sections, delimited by these two HTML tags. Since no change to the input file happens, the command simply is either of the following:
 
 ```bash
 split_sections.sh <in_file.md>
+split_sections.sh --to-files -- <in_file.md>
+split_sections.sh --to-headings -- <in_file.md>
+split_sections.sh --to-files --to-headings -- <in_file.md>
 ```
+
+The two command-line parameters are as follows:
+
+- `-f`, `--to-files`: use the filename as link text on section ends (default: `false`)
+- `-h`, `--to-headings`: use the first heading as link text on section ends (default: `false`)
+
+If both options are omitted (`false`), only arrows will be drawn for the links.
 
 ## 4. Pre-commit hook
 
