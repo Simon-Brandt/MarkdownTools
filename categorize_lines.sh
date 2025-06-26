@@ -125,7 +125,7 @@ for line in "${lines[@]}"; do
         # with a hyphen and thus is a second-level heading.
         categories[-1]="heading 2"
         categories+=("other")
-    elif [[ "${line}" =~ \[[^\]]*?\]\(\#[^\)]*?\) ]]; then
+    elif [[ "${line}" =~ \[[^\]]*?\]\([^\)\#]*?(\#[^\)]*?)?\) ]]; then
         # The line contains at least one hyperlink.
         categories+=("hyperlink")
     else

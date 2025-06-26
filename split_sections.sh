@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-25
+# Last Modification: 2025-06-26
 
 # Usage:
 # bash split_sections.sh [--help | --usage | --version]
@@ -126,30 +126,52 @@ for i in "${!lines[@]}"; do
     then
         # The line contains at least one hyperlink (possibly as part of
         # a table of contents).  Extract it, then shorten the line and
-        # try to match the pattern on the remainder of the line.
+        # try to match the pattern on the remainder of the line.  Ignore
+        # hyperlinks to the Web, using "http://" or "https://" as
+        # prefix.
         hyperlinks=( )
         remainder="${line}"
-        while [[ "${remainder}" =~ \[[^\]]*?\]\(\#[^\)]*?\) ]]; do
+        while [[ "${remainder}" =~ \[[^\]]*?\]\([^\)\#]*?(\#[^\)]*?)?\) ]]; do
             hyperlink="${BASH_REMATCH[0]}"
-            hyperlinks+=("${hyperlink}")
+
+            if [[ ! "${hyperlink}" =~ https?:// ]]; then
+                hyperlinks+=("${hyperlink}")
+            fi
+
             remainder="${remainder#*"${hyperlink}"}"
         done
 
-        # Replace all hyperlinks by the new link targets and append the
+        # If a file is "open" (i.e., the section should move to a file),
+        # replace all hyperlinks by the new link targets and append the
         # line to the currently opened file.
-        if [[ -n "${file}" ]]; then
-            for hyperlink in "${hyperlinks[@]}"; do
-                link="${hyperlink##*\(#}"
-                link="${link%)}"
-
-                traverse_path "${file}" "${heading_files[${link}]}"
-                section="${traversed_path}"
-
-                line="${line/"#${link}"/"${section}#${link}"}"
-            done
-
-            printf '%s\n' "${line}" >> "${file}"
+        if [[ -z "${file}" ]]; then
+            continue
         fi
+
+        for hyperlink in "${hyperlinks[@]}"; do
+            link="${hyperlink#*]\(}"
+            link="${link%)}"
+
+            if [[ "${link::1}" == "#" ]]; then
+                # The link points to a heading in the source file.
+                # Update it to point to the target file.
+                traverse_path "${file}" "${heading_files[${link#*\#}]}"
+                line="${line/"#${link#*\#}"/"${traversed_path}#${link#*\#}"}"
+            elif [[ "${link}" =~ "#" ]]; then
+                # The link points to a heading in another file.  Update
+                # it to the correct path between this file and the
+                # target file.
+                traverse_path "${file}" "${link%%\#*}"
+                line="${line/"${link%%\#*}"/"${traversed_path}"}"
+            else
+                # The link points to another file.  Update it to the
+                # correct path between this file and the target file.
+                traverse_path "${file}" "${link}"
+                line="${line/"${link}"/"${traversed_path}"}"
+            fi
+        done
+
+        printf '%s\n' "${line}" >> "${file}"
     elif [[ "${line}" =~ ^"<!-- <section file=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the section block and contains a
         # filename.  If the filename contains a slash, it is interpreted
