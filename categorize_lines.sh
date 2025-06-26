@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-24
+# Last Modification: 2025-06-26
 
 # Usage:
 # bash categorize_lines.sh [--help | --usage | --version] input_file
@@ -46,13 +46,6 @@ for line in "${lines[@]}"; do
             block=""
         fi
         categories+=("indented code block")
-    elif [[ "${block}" == "toc block" ]]; then
-        # The line lies within a table of contents and may only end it
-        # by the </toc> comment.
-        if [[ "${line}" == "<!-- </toc> -->" ]]; then
-            block=""
-        fi
-        categories+=("toc block")
     elif [[ "${block}" == "verbatim include block" ]]; then
         # The line lies within a verbatim include block and may only end
         # it by the </include> comment.
@@ -106,6 +99,10 @@ for line in "${lines[@]}"; do
         # contain a title.
         block="toc block"
         categories+=("${block}")
+    elif [[ "${line}" == "<!-- </toc> -->" ]]; then
+        # The line denotes the end of the table of contents.
+        block=""
+        categories+=("toc block")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a heading, starting with hashmarks, followed by at
         # least one space.  Count the hashmarks, after having removed

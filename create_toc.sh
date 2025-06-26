@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-25
+# Last Modification: 2025-06-26
 
 # Usage:
 # bash create_toc.sh [--help | --usage | --version]
@@ -93,6 +93,7 @@ heading_line_indices=( )
 hyperlinks=( )
 hyperlink_line_indices=( )
 
+is_toc_block=false
 toc_level=1
 toc_levels=( )
 toc_starts=( )
@@ -101,13 +102,16 @@ toc_ends=( )
 for i in "${!lines[@]}"; do
     if [[ "${categories[i]}" != "toc block" \
         && "${categories[i]}" != "heading"* \
-        && "${categories[i]}" != "hyperlink" ]]
+        && "${categories[i]}" != "hyperlink" \
+        && "${is_toc_block}" == false ]]
     then
         continue
     fi
 
     line="${lines[i]}"
     if [[ "${categories[i]}" == "toc block" ]]; then
+        is_toc_block=true
+
         if [[ "${line}" =~ ^"<!-- <toc title=\""(.*)"\"> -->"$ ]]; then
             # The line denotes the start of the table of contents for
             # later in-place addition and contains a title.  Extract
@@ -130,10 +134,12 @@ for i in "${!lines[@]}"; do
             toc_starts+=("${i}")
             toc_levels+=("${toc_level}")
         elif [[ "${line}" == "<!-- </toc> -->" ]]; then
-            # The line denotes the end of the table-of-contents block.
+            # The line denotes the end of the table of contents.
             toc_ends+=("${i}")
+            is_toc_block=false
         fi
-    elif [[ "${categories[i]}" == "heading"* ]]; then
+    elif [[ "${categories[i]}" == "heading"* && "${is_toc_block}" == false ]]
+    then
         # The line is a heading.  Get the heading level and prepend as
         # many hashmarks as the heading level to the hashmark-stripped
         # heading to set ATX and setext headings to the same (ATX)
@@ -149,7 +155,8 @@ for i in "${!lines[@]}"; do
             heading="#${heading}"
         done
         headings+=("${heading}")
-    elif [[ "${categories[i]}" == "hyperlink" ]]; then
+    elif [[ "${categories[i]}" == "hyperlink" && "${is_toc_block}" == false  ]]
+    then
         # The line contains at least one hyperlink. Extract it, then
         # shorten the line and try to match the pattern on the remainder
         # of the line.
