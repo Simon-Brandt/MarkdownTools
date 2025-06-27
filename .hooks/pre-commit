@@ -2,7 +2,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-06-25
+# Last Modification: 2025-06-27
 
 # Warning: The script will stage all changes in the Markdown files.
 
@@ -33,6 +33,7 @@ for file in "${files[@]}"; do
         -- \
         "${file}"
     bash include_file.sh "${file}"
+    bash create_captions.sh "${file}"
     bash create_toc.sh \
         --in-place \
         --exclude-headings="Table of contents" \

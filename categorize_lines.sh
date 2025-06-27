@@ -103,6 +103,21 @@ for line in "${lines[@]}"; do
         # The line denotes the end of the table of contents.
         block=""
         categories+=("toc block")
+    elif [[ "${line}" == "<!-- <figure file=\""*"\" caption=\""*"\"> -->" ]]
+    then
+        # The line denotes a figure caption and contains a filename and
+        # caption text.
+        block="figure"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- <table caption=\""*"\"> -->" ]]
+    then
+        # The line denotes a table caption and contains a caption text.
+        block="table"
+        categories+=("${block}")
+    elif [[ "${line}" == "<!-- </toc> -->" ]]; then
+        # The line denotes the end of the table of contents.
+        block=""
+        categories+=("toc block")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a heading, starting with hashmarks, followed by at
         # least one space.  Count the hashmarks, after having removed

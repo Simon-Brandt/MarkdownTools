@@ -15,9 +15,10 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
    1. [Dependencies](#22-dependencies)
 1. [Usage](#3-usage)
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
-   1. [Include directives](#32-include-directives)
-   1. [Include directive example](#33-include-directive-example)
-   1. [Sections](#34-sections)
+   1. [Figure and table captions](#32-figure-and-table-captions)
+   1. [Include directives](#33-include-directives)
+   1. [Include directive example](#34-include-directive-example)
+   1. [Sections](#35-sections)
 1. [Pre-commit hook](#4-pre-commit-hook)
 <!-- </toc> -->
 
@@ -144,7 +145,32 @@ There are several command-line parameters available:
 - `-o`, `--out-file=FILE`: the output file to write the TOC to (default: `""`)
 - `-t`, `--titles=TITLES`: the TOC titles to add to the TOCs (default: `"Table of contents"`)
 
-### 3.2. Include directives
+### 3.2. Figure and table captions
+
+Figures and tables provide information in a very condensed form. They may explain facts briefer than text, but are usually not self-explanatory. This is where figure and table captions can help, since they describe the intent in one or two short sentences, facilitating understanding of the figure's or table's contents. Thus, the Markdown Tools' [`create_captions.sh`](create_captions.sh) adds these captions to existing tables and the figures it includes.
+
+Thereby, `create_captions.sh`
+
+- includes figures according to their filepath
+- adds captions to figures and tables
+- numbers both caption types individually and sequentially (as `Fig. <number>: <caption>.` or `Tab. <number>: <caption>.`)
+
+To add captions, you need either of the following HTML comments:
+
+```markdown
+<!-- <figure file="/path/to/file" caption="Figure caption"> -->
+<!-- <table caption="Table caption"> -->
+```
+
+without a closing tag. Instead, the next empty line delimits the caption. The first version includes a file and adds the caption to it, the second version adds the caption to the already existing table. The caption must not end in a period, as the script adds one by itself, doubling the period, otherwise.
+
+Then, run `create_captions.sh` on your Markdown file, which will create the captions. The inclusion is always in-place, so the command simply is:
+
+```bash
+create_captions.sh <in_file.md>
+```
+
+### 3.3. Include directives
 
 When *e.g.* showing the output of a certain command to be documented, one needs to keep the command's functionality and its documentation in sync. Therefore, the Markdown Tools' [`include_file.sh`](include_file.sh) script includes other files, or the output of commands, in the Markdown file using an include directive.
 
@@ -211,7 +237,7 @@ Likewise, we could include the contents of a Markdown file (here [`example.md`](
 This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
 <!-- <include command="sed 's/^#/###/' example.md"> -->
-### 3.3. Include directive example
+### 3.4. Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
  This line has been included.
@@ -232,7 +258,7 @@ In the raw view, you can see that the Markdown file contains another include dir
 
 This shows that you don't need to (and must not) escape potential quotes in your command. Further, since the include directive in the file must not be interpreted upon parsing the README, it is indented by one space. However, as this is not visible in the rendered view, just in the raw file, you shouldn't need to care about it.
 
-### 3.4. Sections
+### 3.5. Sections
 
 For larger software, the documentation may grow to a point where it becomes unhandy for the reader to have everything kept in the same file. While it may still be advantageous to write the documentation in one single file (like for ease of cross-referencing sections), the reader might better obtain the documentation in separate files. To this end, the Markdown Tools' [`split_sections.sh`](split_sections.sh) script supports section tags, with which you can group sections. Any text between an opening and closing section tag will be output into a distinct file (possibly inside a subdirectory).
 
