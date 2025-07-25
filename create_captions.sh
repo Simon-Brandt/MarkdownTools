@@ -66,23 +66,35 @@ for i in "${!lines[@]}"; do
     then
         # The line denotes a figure caption and contains a filename and
         # caption text.  Extract these and add the caption to the
-        # figure.
+        # figure.  End the caption (not within the image's alt text) in
+        # a period, if it doesn't end in a punctuation mark (".:!?").
         file="${BASH_REMATCH[1]}"
         figure_caption="${BASH_REMATCH[2]}"
         (( figure_index++ ))
 
         lines[i]+=$'\n'
         lines[i]+="![${figure_caption}](${file})"
+
+        if [[ "${figure_caption}" =~ [^.:!?]$ ]]; then
+            figure_caption+="."
+        fi
+
         lines[i]+=$'\n'
-        lines[i]+="*Fig. ${figure_index}: ${figure_caption}.*"
+        lines[i]+="*Fig. ${figure_index}: ${figure_caption}*"
     elif [[ "${line}" =~ ^"<!-- <table caption=\""(.*)"\"> -->"$ ]]; then
         # The line denotes a table caption and contains a caption text.
-        # Extract this and add the caption to the table.
+        # Extract this and add the caption to the table.  End the
+        # caption in a period, if it doesn't end in a punctuation mark
+        # (".:!?").
         table_caption="${BASH_REMATCH[1]}"
         (( table_index++ ))
 
+        if [[ "${table_caption}" =~ [^.:!?]$ ]]; then
+            table_caption+="."
+        fi
+
         lines[i]+=$'\n'
-        lines[i]+="*Tab. ${table_index}: ${table_caption}.*"
+        lines[i]+="*Tab. ${table_index}: ${table_caption}*"
     elif [[ -z "${line}" ]]; then
         # The line is empty and ends a figure or table caption.
         is_caption=false

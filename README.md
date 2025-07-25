@@ -180,6 +180,7 @@ Thereby, `create_captions.sh`
 
 - includes figures according to their filepath
 - adds captions to figures and tables
+- ends the captions in a period, if they don't already end in a punctuation mark (`".:!?"`)
 - numbers both caption types individually and sequentially (as `Fig. <number>: <caption>.` or `Tab. <number>: <caption>.`)
 
 To add captions, you need either of the following HTML comments:
@@ -189,7 +190,7 @@ To add captions, you need either of the following HTML comments:
 <!-- <table caption="Table caption"> -->
 ```
 
-without a closing tag. Instead, the next empty line delimits the caption. The first version includes a file and adds the caption to it, the second version adds the caption to the already existing table. The caption must not end in a period, as the script adds one by itself, doubling the period, otherwise.
+without a closing tag. Instead, the next empty line delimits the caption. The first version includes a file and adds the caption to it, the second version adds the caption to the already existing table. The caption may end in a period or other punctuation mark. If it doesn't, the script adds a period by itself.
 
 Then, run `create_captions.sh` on your Markdown file, which will create the captions. The inclusion is always in-place, so the command simply is:
 
