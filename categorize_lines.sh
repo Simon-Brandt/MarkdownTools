@@ -23,11 +23,11 @@
 # Last Modification: 2025-07-25
 
 # Usage:
-# bash categorize_lines.sh [--help | --usage | --version] input_file
+# source categorize_lines.sh input_file
 
 # Purpose: Categorize a Markdown file's lines to headings, table of
-# contents (TOC) lines, include directives, and sections.  Write these
-# categories to STDOUT.
+# contents (TOC) lines, include directives, and sections.  Add these
+# categories to the indexed array ${categories}.
 
 # Extract the headings, TOC lines, include directives, and sections from
 # the input file.  The headings may start with hashmarks ("#") or can be
@@ -64,6 +64,13 @@ for line in "${lines[@]}"; do
             block=""
         fi
         categories+=("indented code block")
+    elif [[ "${block}" == "comment block" ]]; then
+        # The line lies within a comment block and may only end it by
+        # "-->".
+        if [[ "${line}" == *"-->"* ]]; then
+            block=""
+        fi
+        categories+=("comment block")
     elif [[ "${block}" == "verbatim include block" ]]; then
         # The line lies within a verbatim include block and may only end
         # it by the </include> comment.
@@ -83,6 +90,10 @@ for line in "${lines[@]}"; do
         # The line starts an indented code block.
         block="indented code block"
         categories+=("${block}")
+    elif [[ "${line}" == *"<!--"* && "${line}" != *"-->"* ]]; then
+        # The line starts a comment block.
+        block="comment block"
+        categories+=("comment block")
     elif [[ "${line}" == "<!-- <include file=\""*"\" lang=\""*"\"> -->" \
         || "${line}" == "<!-- <include command=\""*"\" lang=\""*"\"> -->" ]]
     then
@@ -132,10 +143,6 @@ for line in "${lines[@]}"; do
         # The line denotes a table caption and contains a caption text.
         block="table"
         categories+=("${block}")
-    elif [[ "${line}" == "<!-- </toc> -->" ]]; then
-        # The line denotes the end of the table of contents.
-        block=""
-        categories+=("toc block")
     elif [[ "${line}" == *( )+(\#)+( )* ]]; then
         # The line is a heading, starting with hashmarks, followed by at
         # least one space.  Count the hashmarks, after having removed
