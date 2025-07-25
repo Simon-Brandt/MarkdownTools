@@ -293,7 +293,7 @@ Thereby, `split_sections.sh`
 
 - splits a Markdown file by section into separate files
 - updates any hyperlink in the split files to point to the novel file the referred section has moved to
-- possibly removes and re-creates the files' directories, such that within directories other than the CWD, only current files are located (and no files from former runs, after which you re-named a section)
+- possibly removes and re-creates the input file's (sub-)directories and/or companion (accompanying) files, such that within subdirectories and the CWD, only current files are located (and no files from former runs, after which you re-named a section and thus file)
 - possibly prepends a comment block, *e.g.*, for a license note, to each file, when the Markdown file starts with a comment block
 - appends a link to the previous and/or next section to each file (using the first heading or filename as link text), creating a contiguous documentation
 
@@ -313,12 +313,17 @@ split_sections.sh --to-headings -- <in_file.md>
 split_sections.sh --to-files --to-headings -- <in_file.md>
 ```
 
-The two command-line parameters are as follows:
+The command-line parameters are as follows:
 
 - `-f`, `--to-files`: use the filename as link text on section ends (default: `false`)
 - `-h`, `--to-headings`: use the first heading as link text on section ends (default: `false`)
+- `--rm-dirs`: remove all (sub-)directories from the CWD, for a clean start (default: `false`)
+- `--rm-files`: remove all files in the CWD, except for `input_file`, for a clean start (default: `false`)
 
-If both options are omitted (`false`), only arrows will be drawn for the links.
+If both `--to-files` and `--to-headings` are omitted (`false`), only arrows will be drawn for the links.
+
+> [!CAUTION]
+> With `--rm-dirs` and `--rm-files`, you purge the files! In a Git repository, this may not be overly problematic, since files can be restored from the history, but to reduce the risk of inadvertently deleting files, both flags only have long option names that you need to type explicitly. Only use these options when you're 100&#8239;% sure that there are only files in the input file's directory which can be re-created from the `split_sections.sh` run, or should indeed be deleted. This may be true when having a `docs` directory with one source Markdown file, from which all other documentation files are generated. When running `split_sections.sh --rm-dirs --rm-files`, these files are either re-created or deleted as intended.
 
 ## 4. Pre-commit hook
 

@@ -76,13 +76,17 @@ function get_link_text() {
 declare in_file
 declare link_to_files
 declare link_to_headings
+declare remove_dirs
+declare remove_files
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
-    "id               | short_opts | long_opts   | val_names  | defaults | type | arg_no | arg_group            | help                                              "
-    "in_file          |            |             | input_file |          | file |      1 | Positional arguments | the input Markdown file                           "
-    "link_to_files    | f          | to-files    |            | false    | bool |      0 | Options              | use the filename as link text on section ends     "
-    "link_to_headings | h          | to-headings |            | false    | bool |      0 | Options              | use the first heading as link text on section ends"
+    "id               | short_opts | long_opts   | val_names  | defaults | type | arg_no | arg_group            | help                                                                 "
+    "in_file          |            |             | input_file |          | file |      1 | Positional arguments | the input Markdown file                                              "
+    "link_to_files    | f          | to-files    |            | false    | bool |      0 | Options              | use the filename as link text on section ends                        "
+    "link_to_headings | h          | to-headings |            | false    | bool |      0 | Options              | use the first heading as link text on section ends                   "
+    "remove_dirs      |            | rm-dirs     |            | false    | bool |      0 | Options              | remove all (sub-)directories from the CWD, for a clean start         "
+    "remove_files     |            | rm-files    |            | false    | bool |      0 | Options              | remove all files in the CWD, except for input_file, for a clean start"
 )
 source argparser -- "$@"
 
@@ -96,6 +100,30 @@ fi
 source "${directory}/functions.sh"
 source "${directory}/categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
+
+# Possibly, remove the directories and/or all files other than the input
+# file in the CWD.
+if [[ "${in_file}" == */* ]]; then
+    file_dir="${in_file%/*}"
+else
+    file_dir="."
+fi
+
+if [[ "${remove_dirs}" == true ]]; then
+    for dir in "${file_dir}"/*; do
+        if [[ -d "${dir}" ]]; then
+            rm --recursive "${dir}"
+        fi
+    done
+fi
+
+if [[ "${remove_files}" == true ]]; then
+    for file in "${file_dir}"/*; do
+        if [[ -f "${file}" && "${file}" != "${in_file}" ]]; then
+            rm "${file}"
+        fi
+    done
+fi
 
 # If the first line starts a comment block, extract it to prepend it to
 # each file after splitting.  This comment may e.g. include a license
@@ -205,17 +233,11 @@ for i in "${!lines[@]}"; do
     elif [[ "${line}" =~ ^"<!-- <section file=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the section block and contains a
         # filename.  If the filename contains a slash, it is interpreted
-        # as directory component.  Create this directory.
+        # as directory component.  Create this directory, if necessary.
         file="${BASH_REMATCH[1]}"
 
         if [[ "${file}" == */* ]]; then
             mkdir --parents "${file%/*}"
-        fi
-
-        # If the file already exists, remove it since the contents will
-        # be appended, below, thus keeping the old contents.
-        if [[ -e "${file}" ]]; then
-            rm "${file}"
         fi
 
         # If a leading comment block was given, write it to the file.
