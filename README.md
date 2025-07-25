@@ -294,6 +294,7 @@ Thereby, `split_sections.sh`
 - splits a Markdown file by section into separate files
 - updates any hyperlink in the split files to point to the novel file the referred section has moved to
 - possibly removes and re-creates the files' directories, such that within directories other than the CWD, only current files are located (and no files from former runs, after which you re-named a section)
+- possibly prepends a comment block, *e.g.*, for a license note, to each file, when the Markdown file starts with a comment block
 - appends a link to the previous and/or next section to each file (using the first heading or filename as link text), creating a contiguous documentation
 
 To split a file, you need the following two HTML comments:

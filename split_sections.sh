@@ -97,6 +97,18 @@ source "${directory}/functions.sh"
 source "${directory}/categorize_lines.sh" "${in_file}"
 mapfile -t lines < "${in_file}"
 
+# If the first line starts a comment block, extract it to prepend it to
+# each file after splitting.  This comment may e.g. include a license
+# note, which must occur in any split file.  Ignore any other comment
+# block.
+file_comment=""
+i=0
+while [[ "${categories[i]}" == "comment block" ]]; do
+    file_comment+="${lines[i]}"
+    file_comment+=$'\n'
+    (( i++ ))
+done
+
 # Get the sections (as filenames) of all headings.  Since upon
 # splitting, they move to different files (perhaps even in different
 # directories), the links in the Markdown file won't work correctly,
@@ -193,18 +205,26 @@ for i in "${!lines[@]}"; do
     elif [[ "${line}" =~ ^"<!-- <section file=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the section block and contains a
         # filename.  If the filename contains a slash, it is interpreted
-        # as directory component.  Create this directory.  If the file
-        # already exists, remove it since the contents will be appended,
-        # below, thus keeping the old contents.
+        # as directory component.  Create this directory.
         file="${BASH_REMATCH[1]}"
 
         if [[ "${file}" == */* ]]; then
             mkdir --parents "${file%/*}"
         fi
 
+        # If the file already exists, remove it since the contents will
+        # be appended, below, thus keeping the old contents.
         if [[ -e "${file}" ]]; then
             rm "${file}"
         fi
+
+        # If a leading comment block was given, write it to the file.
+        # The redirection syntax intentionally overwrites the file's
+        # contents, if it exists, since the new contents will be
+        # appended, below, thus keeping the old contents, else.
+        if [[ -n "${file_comment}" ]]; then
+            printf '%s\n' "${file_comment}"
+        fi > "${file}"
 
         (( section_index++ ))
     elif [[ "${line}" == "<!-- </section> -->" ]]; then
