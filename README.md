@@ -38,24 +38,24 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
    1. [Figure and table captions](#32-figure-and-table-captions)
    1. [Include directives](#33-include-directives)
-   1. [Include directive example](#34-include-directive-example)
-   1. [Sections](#35-sections)
+   1. [Sections](#34-sections)
 1. [Pre-commit hook](#4-pre-commit-hook)
 <!-- </toc> -->
 
 ## 1. Features
 
-The Markdown Tools currently add three features to Markdown:
+The Markdown Tools currently add four features to Markdown:
 
-- tables of contents (TOCs)
-- file and command output inclusion
-- splitting into separate files by section
+- [tables of contents (TOCs)](#31-tables-of-contents-tocs)
+- [figure and table captions](#32-figure-and-table-captions)
+- [file and command output inclusion](#33-include-directives)
+- [splitting into separate files by section](#34-sections)
 
-These features may enhance *e.g.* README files, such as this one or the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser.git "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
+These features may enhance *e.g.* README files, such as this one or the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
 
 ## 2. Installation
 
-It is not necessary to *install* the Markdown Tools, since they are just several Bash scripts. You just need to download them into an arbitrary directory, like `/usr/local/bin`.
+It is not necessary to install the Markdown Tools, since they are just several Bash scripts. You just need to download them into an arbitrary directory, like `/usr/local/bin`.
 
 ### 2.1. Download
 
@@ -83,20 +83,20 @@ PATH="/path/to/MarkdownTools:${PATH}"
 - `/etc/bash.bashrc` (global addition, for non-login shells)
 
 > [!CAUTION]
-> Be wary not to forget the final `${PATH}` component in the above command, or else you will override the [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH")) for all future shell sessions, meaning no other (non-builtin) command will be resolvable, anymore.
+> Be wary not to forget the final `${PATH}` component in the above command, or else you will override the [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH") for all future shell sessions, meaning no other (non-builtin) command will be resolvable, anymore.
 
 ### 2.2. Dependencies
 
-- Bash &geq; 4.0
+- Bash &geq;&#8239;4.0
 - [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)")
 - [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)")
-- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser.git "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser")
+- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser")
 
-The Markdown Tools require Bash to run, since they use non-POSIX features like associative arrays. They are tested with Bash 5.2, precisely, with `GNU bash, Version 5.2.21(1)-release (x86_64-pc-linux-gnu)`. If you encounter errors for versions earlier than 5.2, please file an issue, such that the minimum requirement of &geq; 4.0 can be adjusted.
+The Markdown Tools require Bash to run, since they use non-POSIX features like associative arrays. They are tested with Bash 5.2, precisely, with `GNU bash, Version 5.2.21(1)-release (x86_64-pc-linux-gnu)`. If you encounter errors for versions earlier than 5.2, please file an issue, such that the minimum requirement of &geq;&#8239;4.0 can be adjusted.
 
 Almost all functionality is implemented using Bash builtins. However, Bash doesn't provide builtins for accessing the file system, apart from reading and writing files. Thus, you need to have both [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)") and [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)") installed and in your [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH").
 
-For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser.git "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
+For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
 
 ### 2.3. License
 
@@ -115,11 +115,11 @@ All feature extensions use a distinct HTML comment (the only comment Markdown su
 
 Despite intentionally looking like HTML tags inside comments, the feature tags are made up by the Markdown Tools and don't necessarily form valid HTML. Both tags must stand alone on separate lines, which must not contain any additional characters. Since the tags must be commented out using HTML syntax, they won't be shown in the rendered view.
 
-The first line starts the respective feature block and possibly specifies several parameters, the last line ends the block. Usually, all lines in-between are replaced upon running the Markdown Tools, which facilitates the re-computation of the respective feature. Since the comment tags are kept, you can simply re-run the script to update *e.g.* the TOC, whenever you changed the file.
+The first line starts the respective feature block and possibly specifies several parameters, the last line ends the block. Often, all lines in-between are replaced upon running the Markdown Tools, which facilitates the re-computation of the respective feature. Since the comment tags are kept, you can simply re-run the script to update *e.g.* the TOC, whenever you changed the file.
 
 Note that for TOCs and included files, anything between these tags is *discarded*, since the script assumes that only the TOC or file content may be given, there. Section tags are kept, however, since they delimit the actual contents of your Markdown file.
 
-Upon parsing the Markdown file, the Markdown Tools do their best to implement the rules of [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") to classify (categorize) the lines. Still, the standard is *not* fully implemented, mainly for performance reasons. The Markdown Tools support Markdown headings in ATX style (one to six hashmarks, `#`) or setext style (underlined with `=` or `-`), and respect fenced or indented code blocks. Therein, "headings" (or whatever looks like them, such as Bash comments) are simply ignored. This also holds for the Markdown Tools' special HTML comments, which can safely be given in code blocks.
+Upon parsing the Markdown file, the Markdown Tools do their best to implement the rules of [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") to classify (categorize) the lines. Still, the standard is *not* fully implemented, mainly for performance reasons. The Markdown Tools support Markdown headings in ATX style (one to six hashmarks, `#`) or setext style (underlined with `=` or `-`), and respect fenced or indented code blocks. Therein, "headings" (or whatever looks like them, such as Bash comments) and the like are simply ignored. This also holds for the Markdown Tools' special HTML comments, which can safely be given in code blocks.
 
 ### 3.1. Tables of contents (TOCs)
 
@@ -204,10 +204,10 @@ When *e.g.* showing the output of a certain command to be documented, one needs 
 To this end, `include_file.sh`
 
 - includes a file's contents
-- runs commands and captures their STDOUT and STDERR
+- runs commands and captures their `STDOUT` and `STDERR`
 - optionally surrounds the data with a fenced code block
 - supports language specifications as identifier for the fenced code block for syntax highlighting by an appropriate Markdown renderer
-- includes the command as first line *iff* the language specification is `console`, and precedes it by a `$` and space.
+- includes the command as first line *iff* the language specification is `"console"`, and precedes it by a dollar sign (`"$"`) and space.
 
 To include a file, you need either of the following HTML comments:
 
@@ -224,7 +224,7 @@ followed by the closing tag
 <!-- </include> -->
 ```
 
-The former two versions include a file, the latter two the command's output (STDOUT and STDERR). The second and fourth form put the output in a fenced code block and add a language identifier.
+The former two versions include a file, the latter two the command's output (`STDOUT` and `STDERR`). The second and fourth form put the output in a fenced code block and add a language identifier.
 
 Then, run `include_file.sh` on your Markdown file, which will include the file or command output between these two HTML tags. The inclusion is always in-place, so the command simply is:
 
@@ -258,13 +258,13 @@ So, we have the file included, surrounded by a fenced code block and using Bash 
 Likewise, we could include the contents of a Markdown file (here [`example.md`](example.md)), but this time using a command ([`sed`](https://man7.org/linux/man-pages/man1/sed.1.html "man7.org &rightarrow; man pages &rightarrow; sed(1)")):
 
 ```markdown
-<!-- <include command="sed 's/^#/###/' example.md"> -->
+<!-- <include command="sed 's/^#/####/' example.md"> -->
 ```
 
 This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
-<!-- <include command="sed 's/^#/###/' example.md"> -->
-### 3.4. Include directive example
+<!-- <include command="sed 's/^#/####/' example.md"> -->
+#### Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
  This line has been included.
@@ -273,9 +273,9 @@ This includes `sed`'s output as normal Markdown, which is then interpreted by th
 
 In the raw view, you can see that the Markdown file contains another include directive (interpreted by running `include_file.sh` on `example.md`):
 
-<!-- <include command="sed 's/^#/###/' example.md" lang="markdown"> -->
+<!-- <include command="sed 's/^#/####/' example.md" lang="markdown"> -->
  ```markdown
- ### Include directive example
+ #### Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
  This line has been included.
@@ -285,14 +285,14 @@ In the raw view, you can see that the Markdown file contains another include dir
 
 This shows that you don't need to (and must not) escape potential quotes in your command. Further, since the include directive in the file must not be interpreted upon parsing the README, it is indented by one space. However, as this is not visible in the rendered view, just in the raw file, you shouldn't need to care about it.
 
-### 3.5. Sections
+### 3.4. Sections
 
 For larger software, the documentation may grow to a point where it becomes unhandy for the reader to have everything kept in the same file. While it may still be advantageous to write the documentation in one single file (like for ease of cross-referencing sections), the reader might better obtain the documentation in separate files. To this end, the Markdown Tools' [`split_sections.sh`](split_sections.sh) script supports section tags, with which you can group sections. Any text between an opening and closing section tag will be output into a distinct file (possibly inside a subdirectory).
 
 Thereby, `split_sections.sh`
 
 - splits a Markdown file by section into separate files
-- updates any hyperlink in the split files to point to the novel file the referred section has moved to
+- updates any hyperlink in the split files to point to the novel file the referenced section has moved to
 - possibly removes and re-creates the input file's (sub-)directories and/or companion (accompanying) files, such that within subdirectories and the CWD, only current files are located (and no files from former runs, after which you re-named a section and thus file)
 - possibly prepends a comment block, *e.g.*, for a license note, to each file, when the Markdown file starts with a comment block
 - appends a link to the previous and/or next section to each file (using the first heading or filename as link text), creating a contiguous documentation
@@ -308,9 +308,7 @@ Then, run `split_sections.sh` on your Markdown file, which will split the file i
 
 ```bash
 split_sections.sh <in_file.md>
-split_sections.sh --to-files -- <in_file.md>
-split_sections.sh --to-headings -- <in_file.md>
-split_sections.sh --to-files --to-headings -- <in_file.md>
+split_sections.sh [--rm-dirs] [--rm-files] [--to-files] [--to-headings] -- <in_file.md>
 ```
 
 The command-line parameters are as follows:
@@ -329,6 +327,6 @@ If both `--to-files` and `--to-headings` are omitted (`false`), only arrows will
 
 When working with Git repositories, it may not be convenient to always have to re-run the Markdown Tools scripts by hand. Thus, using the provided sample [`pre-commit`](.hooks/pre-commit) file, you can run the scripts *via* a pre-commit hook anytime you create commits. Just copy or symlink `pre-commit` to `.git/hooks` in your Git repository, and before the actual commit happens, the Markdown Tools will run over any Markdown file (with `.md` filename extension, change as appropriate) in the current staging level.
 
-After in-place modification, the Markdown files get staged, again, before committing them with the added or modified TOC, included file, or section splitting. This means that both your changes and the ones from the Markdown Tools will be included in the same commit.
+After in-place modification, the Markdown files get staged, again, before committing them with the added or modified TOC, added caption, included file, or section splitting. This means that both your changes and the ones from the Markdown Tools will be included in the same commit.
 
-Note that for simplicity, the sample hook also stages all other modifications within the Markdown file, so you can't change multiple locations prior committing them sequentially&mdash;they would be staged for commit all at once.
+Note that for simplicity, the sample hook also stages all other modifications within the Markdown file, so you can't change multiple locations within the file prior committing them sequentially&mdash;they would be staged for commit all at once.

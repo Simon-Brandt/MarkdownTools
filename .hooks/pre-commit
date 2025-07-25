@@ -47,7 +47,7 @@ for file in "${files[@]}"; do
     bash create_toc.sh \
         --in-place \
         --exclude-headings="Table of contents" \
-        --exclude-levels=1 \
+        --exclude-levels=1,4 \
         -- \
         "${file}"
     bash include_file.sh "${file}"
@@ -55,7 +55,7 @@ for file in "${files[@]}"; do
     bash create_toc.sh \
         --in-place \
         --exclude-headings="Table of contents" \
-        --exclude-levels=1 \
+        --exclude-levels=1,4 \
         -- \
         "${file}"
     bash split_sections.sh \
