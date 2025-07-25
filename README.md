@@ -13,6 +13,7 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
 1. [Installation](#2-installation)
    1. [Download](#21-download)
    1. [Dependencies](#22-dependencies)
+   1. [License](#23-license)
 1. [Usage](#3-usage)
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
    1. [Figure and table captions](#32-figure-and-table-captions)
@@ -76,6 +77,12 @@ The Markdown Tools require Bash to run, since they use non-POSIX features like a
 Almost all functionality is implemented using Bash builtins. However, Bash doesn't provide builtins for accessing the file system, apart from reading and writing files. Thus, you need to have both [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)") and [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)") installed and in your [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH").
 
 For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser.git "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
+
+### 2.3. License
+
+The Markdown Tools are licensed under the terms and conditions of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0 "apache.org &rightarrow; Licenses &rightarrow; Apache License, Version 2.0"). This applies to all source code files (shell scripts) and the documentation (this [README](README.md)), with the exception of [`example.sh`](example.sh) and [`example.md`](example.md), as well as the [`.shellcheckrc`](.shellcheckrc) and [`.gitignore`](.gitignore), which are all placed in the Public Domain.
+
+The Apache License v2.0 allows running, modifying, and distributing the Markdown Tools, even in commercial settings, provided that the license is distributed along the source code or compiled objects. *(This is not legal advice. Read the [license](LICENSE) for the exact terms.)*
 
 ## 3. Usage
 
