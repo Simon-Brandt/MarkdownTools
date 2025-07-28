@@ -193,7 +193,8 @@ function update_hyperlinks() {
         if [[ "${link::1}" == "#" ]]; then
             # The link points to a heading in the source file.  Update
             # it to point to the target file.
-            # shellcheck disable=SC2154  # heading_files is set by caller.
+
+            # shellcheck disable=SC2154  # Global variables are set by caller.
             if [[ "${heading_files@a}" =~ "A" ]]; then
                 traverse_path "${file}" "${heading_files[${link#*\#}]}"
                 line="${line/"#${link#*\#}"/"${traversed_path}#${link#*\#}"}"
@@ -210,4 +211,50 @@ function update_hyperlinks() {
             line="${line/"${link}"/"${traversed_path}"}"
         fi
     done
+}
+
+function get_link_text() {
+    # Set the link text as either the heading, the section, or both.
+    # Surround the section with backticks as Markdown code formatting.
+    #
+    # Arguments:
+    # - $1: the section to create the link text for
+    # - $2: the current file
+    #
+    # Globals:
+    # - link_text: the created link text
+    # - link_to_files: whether to use the section's filename for the
+    #   link text (read-only)
+    # - link_to_headings: whether to use the first heading for the link
+    #   text (read-only)
+    # - section: the section's traversed filepath
+    # - section_headings: the associative array of all sections' first
+    #   headings (read-only)
+
+    local file
+
+    section="$1"
+    file="$2"
+
+    # Get the first heading in the given section, and the full filepath
+    # from the current file to the section's file.
+
+    # shellcheck disable=SC2154  # Global variables are set by caller.
+    heading="${section_headings[${section}]##+(#) }"
+    traverse_path "${file}" "${section}"
+    section="${traversed_path}"
+
+    # shellcheck disable=SC2034  # Global variable is used by caller.
+    # shellcheck disable=SC2154  # Global variables are set by caller.
+    if [[ "${link_to_files}" == true \
+        && "${link_to_headings}" == true ]]
+    then
+        link_text="${heading} (\`${section}\`)"
+    elif [[ "${link_to_files}" == true ]]; then
+        link_text="\`${section}\`"
+    elif [[ "${link_to_headings}" == true ]]; then
+        link_text="${heading}"
+    else
+        link_text=""
+    fi
 }

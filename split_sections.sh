@@ -30,48 +30,6 @@
 
 # Purpose: Split the Markdown file by section in different files.
 
-function get_link_text() {
-    # Set the link text as either the heading, the section, or both.
-    # Surround the section with backticks as Markdown code formatting.
-    #
-    # Arguments:
-    # - $1: the section to create the link text for
-    # - $2: the current file
-    #
-    # Globals:
-    # - link_text: the created link text
-    # - link_to_files: whether to use the section's filename for the
-    #   link text (read-only)
-    # - link_to_headings: whether to use the first heading for the link
-    #   text (read-only)
-    # - section: the section's traversed filepath
-    # - section_headings: the associative array of all sections' first
-    #   headings (read-only)
-
-    local file
-
-    section="$1"
-    file="$2"
-
-    # Get the first heading in the given section, and the full filepath
-    # from the current file to the section's file
-    heading="${section_headings[${section}]##+(#) }"
-    traverse_path "${file}" "${section}"
-    section="${traversed_path}"
-
-    if [[ "${link_to_files}" == true \
-        && "${link_to_headings}" == true ]]
-    then
-        link_text="${heading} (\`${section}\`)"
-    elif [[ "${link_to_files}" == true ]]; then
-        link_text="\`${section}\`"
-    elif [[ "${link_to_headings}" == true ]]; then
-        link_text="${heading}"
-    else
-        link_text=""
-    fi
-}
-
 # Read and parse the arguments.
 declare in_file
 declare link_to_files
