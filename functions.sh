@@ -186,6 +186,10 @@ function update_hyperlinks() {
         remainder="${remainder#*"${link}"}"
     done
 
+    # For each hyperlink, extract the link part and update it in-place.
+    # In order to prevent the replacement from replacing the link text,
+    # instead of the link itself, when both are identical, replace the
+    # surrounding parentheses as well, just by themselves.
     for link in "${links[@]}"; do
         link="${link#*]\(}"
         link="${link%)}"
@@ -197,18 +201,18 @@ function update_hyperlinks() {
             # shellcheck disable=SC2154  # Global variables are set by caller.
             if [[ "${heading_files@a}" =~ "A" ]]; then
                 traverse_path "${file}" "${heading_files[${link#*\#}]}"
-                line="${line/"#${link#*\#}"/"${traversed_path}#${link#*\#}"}"
+                line="${line/"(#${link#*\#})"/"(${traversed_path}#${link#*\#})"}"
             fi
         elif [[ "${link}" =~ "#" ]]; then
             # The link points to a heading in another file.  Update it
             # to the correct path between this file and the target file.
             traverse_path "${file}" "${link%%\#*}"
-            line="${line/"${link%%\#*}"/"${traversed_path}"}"
+            line="${line/"(${link%%\#*})"/"(${traversed_path})"}"
         else
             # The link points to another file.  Update it to the correct
             # path between this file and the target file.
             traverse_path "${file}" "${link}"
-            line="${line/"${link}"/"${traversed_path}"}"
+            line="${line/"(${link})"/"(${traversed_path})"}"
         fi
     done
 }
