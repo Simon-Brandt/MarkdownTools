@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-07-25
+# Last Modification: 2025-07-28
 
 # Usage:
 # source functions.sh
@@ -98,6 +98,7 @@ function traverse_path() {
 
     local directories_end
     local directories_start
+    local i
     local start
     local end
 
