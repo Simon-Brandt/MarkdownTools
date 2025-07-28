@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-07-25
+# Last Modification: 2025-07-28
 
 # Usage:
 # source categorize_lines.sh input_file
@@ -39,7 +39,7 @@ shopt -s extglob
 
 block=""
 categories=( )
-: "${in_file:-}"
+in_file="$1"
 
 mapfile -t lines < "${in_file}"
 for line in "${lines[@]}"; do
