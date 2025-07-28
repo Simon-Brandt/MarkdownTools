@@ -147,3 +147,67 @@ function traverse_path() {
     done
     traversed_path+="${directories_end[-1]}"
 }
+
+function update_hyperlinks() {
+    # Update all hyperlinks in the line to point to the correct target
+    # when a file has moved.
+    #
+    # Arguments:
+    # - $1: the line whose hyperlinks to update
+    # - $2: the current file
+    #
+    # Globals:
+    # - heading_files: the file each heading has moved to (optional,
+    #   only used when the calling script splits files by section)
+    # - line: The line whose hyperlinks to update
+
+    local file
+    local link
+    local -a links
+    local remainder
+    local traversed_path
+
+    line="$1"
+    file="$2"
+
+    # The line contains at least one hyperlink (possibly as part of a
+    # table of contents).  Extract it, then shorten the line and try to
+    # match the pattern on the remainder of the line.  Ignore hyperlinks
+    # to the Web, using "http://" or "https://" as prefix.
+    links=( )
+    remainder="${line}"
+    while [[ "${remainder}" =~ \[[^\]]*?\]\([^\)\#]*?(\#[^\)]*?)?\) ]]; do
+        link="${BASH_REMATCH[0]}"
+
+        if [[ ! "${link}" =~ https?:// ]]; then
+            links+=("${link}")
+        fi
+
+        remainder="${remainder#*"${link}"}"
+    done
+
+    for link in "${links[@]}"; do
+        link="${link#*]\(}"
+        link="${link%)}"
+
+        if [[ "${link::1}" == "#" ]]; then
+            # The link points to a heading in the source file.  Update
+            # it to point to the target file.
+            # shellcheck disable=SC2154  # heading_files is set by caller.
+            if [[ "${heading_files@a}" =~ "A" ]]; then
+                traverse_path "${file}" "${heading_files[${link#*\#}]}"
+                line="${line/"#${link#*\#}"/"${traversed_path}#${link#*\#}"}"
+            fi
+        elif [[ "${link}" =~ "#" ]]; then
+            # The link points to a heading in another file.  Update it
+            # to the correct path between this file and the target file.
+            traverse_path "${file}" "${link%%\#*}"
+            line="${line/"${link%%\#*}"/"${traversed_path}"}"
+        else
+            # The link points to another file.  Update it to the correct
+            # path between this file and the target file.
+            traverse_path "${file}" "${link}"
+            line="${line/"${link}"/"${traversed_path}"}"
+        fi
+    done
+}
