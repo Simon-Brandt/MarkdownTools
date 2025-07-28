@@ -217,6 +217,7 @@ To include a file, you need either of the following HTML comments:
 <!-- <include file="/path/to/file" lang="lang_spec"> -->
 <!-- <include command="cmd"> -->
 <!-- <include command="cmd" lang="lang_spec"> -->
+<!-- <include command="cmd" md-file="/path/to/file"> -->
 ```
 
 followed by the closing tag
@@ -225,7 +226,7 @@ followed by the closing tag
 <!-- </include> -->
 ```
 
-The former two versions include a file, the latter two the command's output (`STDOUT` and `STDERR`). The second and fourth form put the output in a fenced code block and add a language identifier.
+The former two versions include a file, the latter three the command's output (`STDOUT` and `STDERR`). The second and fourth form put the output in a fenced code block and add a language identifier. The fifth version is special, in so far as it is designed to be used for Markdown inclusion. The command is expected to produce valid Markdown, which is then included as normal content, while updating all hyperlinks to correctly point to the referenced sections or files.
 
 Then, run `include_file.sh` on your Markdown file, which will include the file or command output between these two HTML tags. The inclusion is always in-place, so the command simply is:
 
@@ -259,12 +260,12 @@ So, we have the file included, surrounded by a fenced code block and using Bash 
 Likewise, we could include the contents of a Markdown file (here [`example.md`](example.md)), but this time using a command ([`sed`](https://man7.org/linux/man-pages/man1/sed.1.html "man7.org &rightarrow; man pages &rightarrow; sed(1)")):
 
 ```markdown
-<!-- <include command="sed 's/^#/####/' example.md"> -->
+<!-- <include command="sed 's/^#/####/' example.md" md-file="example.md"> -->
 ```
 
 This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
-<!-- <include command="sed 's/^#/####/' example.md"> -->
+<!-- <include command="sed 's/^#/####/' example.md" md-file="example.md"> -->
 #### Include directive example
  
  <!-- <include command="printf '%s\n' "This line has been included.""> -->
