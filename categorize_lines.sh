@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-07-28
+# Last Modification: 2025-07-29
 
 # Usage:
 # source categorize_lines.sh input_file
@@ -40,6 +40,15 @@ shopt -s extglob
 block=""
 categories=( )
 in_file="$1"
+include_nestedness=0
+
+# If the include nestedness is greater than zero, only increment or
+# decrement it, depending on the line's contents, then unset it.
+# Don't include the actual requested file or command output, which
+# would need to be done separately for the file which is about to be
+# included.  This prevents infinite regression, when file A includes
+# file B, and vice versa.
+
 
 mapfile -t lines < "${in_file}"
 for line in "${lines[@]}"; do
@@ -73,9 +82,21 @@ for line in "${lines[@]}"; do
         categories+=("comment block")
     elif [[ "${block}" == "verbatim include block" ]]; then
         # The line lies within a verbatim include block and may only end
-        # it by the </include> comment.
-        if [[ "${line}" == "<!-- </include> -->" ]]; then
-            block=""
+        # it by the </include> comment, and only for the top-most
+        # include block, where there is no nestedness.  When another
+        # (nested) include blocks starts, increment the nestedness as
+        # appropriate.
+        if [[ "${line}" == "<!-- <include file=\""*"\" lang=\""*"\"> -->" \
+            || "${line}" == "<!-- <include command=\""*"\" lang=\""*"\"> -->" \
+            || "${line}" == "<!-- <include file=\""*"\"> -->" \
+            || "${line}" == "<!-- <include command=\""*"\"> -->" ]]
+        then
+            (( include_nestedness++ ))
+        elif [[ "${line}" == "<!-- </include> -->" ]]; then
+            (( include_nestedness-- ))
+            if (( include_nestedness == 0 )); then
+                block=""
+            fi
         fi
         categories+=("verbatim include block")
     elif [[ "${line}" == "\`\`\`"* ]]; then
@@ -97,21 +118,37 @@ for line in "${lines[@]}"; do
     elif [[ "${line}" == "<!-- <include file=\""*"\" lang=\""*"\"> -->" \
         || "${line}" == "<!-- <include command=\""*"\" lang=\""*"\"> -->" ]]
     then
-        # The line denotes the start of the verbatim include block and
-        # contains a filename or command, and a langauge specification.
+        # The line denotes the start of the top-most verbatim include
+        # block and contains a filename or command, and a language
+        # specification.
         block="verbatim include block"
         categories+=("${block}")
+        (( include_nestedness++ ))
     elif [[ "${line}" == "<!-- <include file=\""*"\"> -->" \
         || "${line}" == "<!-- <include command=\""*"\"> -->" ]]
     then
         # The line denotes the start of the normal include block and
-        # contains a filename or command.
-        block="normal include block"
-        categories+=("${block}")
+        # contains a filename or command.  Only categorize it as include
+        # block if it's the top-most one to prevent infinite regression
+        # upon inclusion,, when file A includes file B, and vice versa.
+        if (( include_nestedness == 0 )); then
+            block="normal include block"
+            categories+=("${block}")
+        else
+            categories+=("other")
+        fi
+        (( include_nestedness++ ))
     elif [[ "${line}" == "<!-- </include> -->" ]]; then
-        # The line denotes the end of a normal include block.
-        block=""
-        categories+=("normal include block")
+        # The line denotes the end of a normal include block.  Again,
+        # only categorize it as ended include block if it's the top-most
+        # one.
+        (( include_nestedness-- ))
+        if (( include_nestedness == 0 )); then
+            block=""
+            categories+=("normal include block")
+        else
+            categories+=("other")
+        fi
     elif [[ "${line}" == "<!-- <section file=\""*"\"> -->" ]]; then
         # The line denotes the start of the section block and contains a
         # filename.

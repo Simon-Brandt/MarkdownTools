@@ -249,7 +249,8 @@ on the desired position in your Markdown file, run `include_file.sh`, and betwee
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-05-28
+# Last Modification: 2025-07-29
+# License: Public Domain
 
 printf "Hello, world!\n"
 ```
@@ -266,26 +267,28 @@ Likewise, we could include the contents of a Markdown file (here [`example.md`](
 This includes `sed`'s output as normal Markdown, which is then interpreted by the renderer:
 
 <!-- <include command="sed 's/^#/####/' example.md" md-file="example.md"> -->
+<!-- License: Public Domain -->
 #### Include directive example
- 
- <!-- <include command="printf '%s\n' "This line has been included.""> -->
- This line has been included.
- <!-- </include> -->
+
+<!-- <include command="printf '%s\n' "This line has been included.""> -->
+This line has been included.
+<!-- </include> -->
 <!-- </include> -->
 
 In the raw view, you can see that the Markdown file contains another include directive (interpreted by running `include_file.sh` on `example.md`):
 
 <!-- <include command="sed 's/^#/####/' example.md" lang="markdown"> -->
- ```markdown
- #### Include directive example
- 
- <!-- <include command="printf '%s\n' "This line has been included.""> -->
- This line has been included.
- <!-- </include> -->
+```markdown
+<!-- License: Public Domain -->
+#### Include directive example
+
+<!-- <include command="printf '%s\n' "This line has been included.""> -->
+This line has been included.
+<!-- </include> -->
 ```
 <!-- </include> -->
 
-This shows that you don't need to (and must not) escape potential quotes in your command. Further, since the include directive in the file must not be interpreted upon parsing the README, it is indented by one space. However, as this is not visible in the rendered view, just in the raw file, you shouldn't need to care about it.
+This shows that you don't need to (and must not) escape potential quotes in your command. Further, the include directive in the file must not be interpreted upon parsing the README, so `include_file.sh` counts how many starting include directive it finds and ignores all end tags until the last. By this, infinite regression (and thus infinite inclusion loops) is impossible, like when file A includes file B, and *vice versa*.
 
 ### 3.4. Sections
 

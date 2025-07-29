@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-07-28
+# Last Modification: 2025-07-29
 
 # Usage:
 # bash include_file.sh [--help | --usage | --version] input_file
@@ -55,8 +55,11 @@ mapfile -t lines < "${in_file}"
 tmpfile="$(mktemp)"
 
 # Include the files and command outputs.
+include_nestedness=0
 is_normal_include_block=false
 for i in "${!lines[@]}"; do
+    # Only include files and command outputs for include block lines,
+    # except when in a normal (non-verbatim) include block.
     if [[ "${categories[i]}" == "normal include block" ]]; then
         is_normal_include_block=true
     elif [[ "${categories[i]}" != *"include block" \
@@ -65,7 +68,29 @@ for i in "${!lines[@]}"; do
         continue
     fi
 
+    # If the include nestedness is greater than zero, only increment or
+    # decrement it, depending on the line's contents, then unset it.
+    # Don't include the actual requested file or command output, which
+    # would need to be done separately for the file which is about to be
+    # included.  This prevents infinite regression, when file A includes
+    # file B, and vice versa.
     line="${lines[i]}"
+    if (( "${include_nestedness}" > 0 )) \
+        && [[ "${line}" =~ ^"<!-- <include "(.*)"> -->"$ ]]
+    then
+        (( include_nestedness++ ))
+        unset 'lines[i]'
+        continue
+    elif (( "${include_nestedness}" > 1 )) \
+        && [[ "${line}" == "<!-- </include> -->" ]]
+    then
+        (( include_nestedness-- ))
+        unset 'lines[i]'
+        continue
+    fi
+
+    # At this point, the include nestedness is guaranteed to be zero, so
+    # include the file or command output as appropriate.
     if [[
         "${line}" =~ ^"<!-- <include file=\""(.*)"\" lang=\""(.*)"\"> -->"$
     ]]
@@ -74,6 +99,7 @@ for i in "${!lines[@]}"; do
         # filename and language specification.
         filename="${BASH_REMATCH[1]}"
         language="${BASH_REMATCH[2]}"
+        (( include_nestedness++ ))
 
         lines[i]+=$'\n'
         lines[i]+="\`\`\`${language}"
@@ -87,6 +113,8 @@ for i in "${!lines[@]}"; do
         # The line denotes the start of the include block and contains a
         # filename.
         filename="${BASH_REMATCH[1]}"
+        (( include_nestedness++ ))
+
         lines[i]+=$'\n'
         lines[i]+="$(< "${filename}")"
     elif [[
@@ -97,6 +125,7 @@ for i in "${!lines[@]}"; do
         # command and language specification.
         command="${BASH_REMATCH[1]}"
         language="${BASH_REMATCH[2]}"
+        (( include_nestedness++ ))
 
         lines[i]+=$'\n'
         lines[i]+="\`\`\`${language}"
@@ -108,10 +137,6 @@ for i in "${!lines[@]}"; do
 
         lines[i]+=$'\n'
         lines[i]+="$(eval "${command}" 2>&1)"
-
-        if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
-            lines[i]="${lines[i]//$'\n'/& }"
-        fi
 
         lines[i]+=$'\n'
         lines[i]+="\`\`\`"
@@ -129,6 +154,7 @@ for i in "${!lines[@]}"; do
         # contents and append them to the input file's lines.
         command="${BASH_REMATCH[1]}"
         filename="${BASH_REMATCH[2]}"
+        (( include_nestedness++ ))
 
         eval "${command}" > "${tmpfile}" 2>&1
 
@@ -151,22 +177,17 @@ EOF
 
         lines[i]+=$'\n'
         lines[i]+="${command_output}"
-
-        if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
-            lines[i]="${lines[i]//$'\n'/& }"
-        fi
     elif [[ "${line}" =~ ^"<!-- <include command=\""(.*)"\"> -->"$ ]]; then
         # The line denotes the start of the include block and contains a
         # command.
         command="${BASH_REMATCH[1]}"
+        (( include_nestedness++ ))
+
         lines[i]+=$'\n'
         lines[i]+="$(eval "${command}" 2>&1)"
-
-        if [[ "${lines[i]}" =~ $'\n'"<!-- </include> -->"$ ]]; then
-            lines[i]="${lines[i]//$'\n'/& }"
-        fi
     elif [[ "${line}" == "<!-- </include> -->" ]]; then
         # The line denotes the end of the include block.
+        (( include_nestedness-- ))
         is_normal_include_block=false
     else
         # The line contains the previously included file's contents.
