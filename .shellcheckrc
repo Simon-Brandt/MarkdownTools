@@ -1,3 +1,8 @@
+# Author: Simon Brandt
+# E-Mail: simon.brandt@uni-greifswald.de
+# Last Modification: 2025-07-29
+# License: Public Domain
+
 # Look for sourced files relative to the checked script.
 source-path=SCRIPTDIR
 source-path=SCRIPTDIR/../ShellArgparser
