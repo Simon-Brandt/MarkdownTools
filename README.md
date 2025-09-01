@@ -90,13 +90,13 @@ PATH="/path/to/MarkdownTools:${PATH}"
 - Bash &geq;&#8239;5.1
 - [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)")
 - [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)")
-- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser")
+- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") &geq;&#8239;1.0.0 and &lt;&#8239;2.0.0
 
-The Markdown Tools require Bash to run, since they use non-POSIX features like associative arrays. They are tested with Bash 5.2, precisely, with `GNU bash, Version 5.2.21(1)-release (x86_64-pc-linux-gnu)`. If you encounter errors for version 5.1, please file an issue, such that the minimum requirement of &geq;&#8239;5.1 can be adjusted. Earlier Bash versions aren't supported, since, *e.g.*, some parameter transformations aren't available, there.
+The Markdown Tools require **Bash &geq;&#8239;5.1** to run. They are tested with Bash 5.2, precisely, with `GNU bash, Version 5.2.21(1)-release (x86_64-pc-linux-gnu)`. If you encounter errors for version 5.1, please file an issue, such that the minimum requirement of &geq;&#8239;5.1 can be adjusted. Earlier Bash versions aren't supported, since, *e.g.*, some parameter transformations aren't available, there.
 
 Almost all functionality is implemented using Bash builtins. However, Bash doesn't provide builtins for accessing the file system, apart from reading and writing files. Thus, you need to have both [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)") and [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)") installed and in your [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH").
 
-For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
+For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") in version 1.x.x is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
 
 ### 2.3. License
 
