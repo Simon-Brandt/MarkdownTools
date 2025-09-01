@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-07-29
+# Last Modification: 2025-09-01
 # License: Public Domain
 
 printf "Hello, world!\n"
