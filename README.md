@@ -33,7 +33,8 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
 1. [Installation](#2-installation)
    1. [Download](#21-download)
    1. [Dependencies](#22-dependencies)
-   1. [License](#23-license)
+   1. [Release and versioning policy](#23-release-and-versioning-policy)
+   1. [License](#24-license)
 1. [Usage](#3-usage)
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
    1. [Figure and table captions](#32-figure-and-table-captions)
@@ -51,7 +52,7 @@ The Markdown Tools currently add four features to Markdown:
 - [file and command output inclusion](#33-include-directives)
 - [splitting into separate files by section](#34-sections)
 
-These features may enhance *e.g.* README files, such as this one or the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
+These features may enhance *e.g.* README files, such as this one or the [Shell Argparser's](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
 
 ## 2. Installation
 
@@ -98,7 +99,15 @@ Almost all functionality is implemented using Bash builtins. However, Bash doesn
 
 For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") in version 1.x.x is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
 
-### 2.3. License
+### 2.3. Release and versioning policy
+
+Since the Markdown Tools are rather loosely connected scripts serving different purposes, [semantic versioning (SemVer)](https://semver.org/ "semver.org") would be difficult&mdash;after all, a breaking change for one script doesn't necessarily break another script and by this your workflow.
+
+Thus, the Markdown Tools use [calendar versioning (CalVer)](https://calver.org/ "calver.org") in the `YY.0M.MICRO` scheme, *i.e.*, the two-digit year, the zero-padded two-digit month, and a final integer starting from zero as micro version. The latter is necessary should more than one version be released in the same month.
+
+Note that *any* release might be breaking, there are *no* guarantees reagarding backwards compatibility. Therefore, changes will be released very soon after their implementation, after having confirmed them toi work correctly upon creating the [Shell Argparser's](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
+
+### 2.4. License
 
 The Markdown Tools are licensed under the terms and conditions of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0 "apache.org &rightarrow; Licenses &rightarrow; Apache License, Version 2.0"). This applies to all source code files (shell scripts) and the documentation (this [README](README.md)), with the exception of [`example.sh`](example.sh) and [`example.md`](example.md), as well as the [`.shellcheckrc`](.shellcheckrc) and [`.gitignore`](.gitignore), which are all placed in the Public Domain.
 
