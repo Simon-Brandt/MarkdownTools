@@ -20,6 +20,8 @@
 
 # Markdown Tools
 
+[![DOI](https://zenodo.org/badge/931533492.svg)](https://doi.org/10.5281/zenodo.17037178)
+
 The Markdown Tools serve as simple, yet powerful means to extend the features of Markdown ([CommonMark](https://spec.commonmark.org/ "spec.commonmark.org") / [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") flavor). However, introducing additional syntax elements would mean that the ususal Markdown renderers would not recognize them and instead show the raw syntax (or, even worse, some differently interpreted version due to similarity with other constructs).
 
 Instead, the Markdown Tools use special HTML comments to denote the start and end of blocks, which the Markdown parser simply ignores&mdash;they're comments, after all. In contrast, the Markdown Tools parser recognizes the special syntax in these comments and performs the required tasks to enhance the Markdown file (commonly in-place). This means that the rendering is unaffected, since the new features use standard Markdown constructs.
