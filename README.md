@@ -20,7 +20,7 @@
 
 # Markdown Tools
 
-[![DOI](https://zenodo.org/badge/931533492.svg)](https://doi.org/10.5281/zenodo.17037178)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17037178.svg)](https://doi.org/10.5281/zenodo.17037178)
 
 The Markdown Tools serve as simple, yet powerful means to extend the features of Markdown ([CommonMark](https://spec.commonmark.org/ "spec.commonmark.org") / [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/ "github.github.com &rightarrow; GFM") flavor). However, introducing additional syntax elements would mean that the ususal Markdown renderers would not recognize them and instead show the raw syntax (or, even worse, some differently interpreted version due to similarity with other constructs).
 
