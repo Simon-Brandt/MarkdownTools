@@ -41,6 +41,7 @@ Since the HTML comments are kept in the modified file, it is possible to re-run 
    1. [Tables of contents (TOCs)](#31-tables-of-contents-tocs)
    1. [Figure and table captions](#32-figure-and-table-captions)
    1. [Include directives](#33-include-directives)
+      1. [Include directive example](#331-include-directive-example)
    1. [Sections](#34-sections)
 1. [Pre-commit hook](#4-pre-commit-hook)
 <!-- </toc> -->
@@ -93,13 +94,13 @@ PATH="/path/to/MarkdownTools:${PATH}"
 - Bash&nbsp;&geq;&#8239;5.1
 - [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)")
 - [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)")
-- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") &geq;&#8239;1.0.0 and &lt;&#8239;2.0.0
+- [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") &geq;&#8239;1.2.0 and &lt;&#8239;2.0.0
 
 The Markdown Tools require **Bash&nbsp;&geq;&#8239;5.1** to run. They are tested with Bash&nbsp;5.2, precisely, with `GNU bash, Version 5.2.21(1)-release (x86_64-pc-linux-gnu)`. If you encounter errors for version 5.1, please file an issue, such that the minimum requirement of &geq;&#8239;5.1 can be adjusted. Earlier Bash versions aren't supported, since, *e.g.*, some parameter transformations aren't available, there.
 
 Almost all functionality is implemented using Bash builtins. However, Bash doesn't provide builtins for accessing the file system, apart from reading and writing files. Thus, you need to have both [`mkdir`](https://man7.org/linux/man-pages/man1/mkdir.1.html "man7.org &rightarrow; man pages &rightarrow; mkdir(1)") and [`rm`](https://man7.org/linux/man-pages/man1/rm.1.html "man7.org &rightarrow; man pages &rightarrow; rm(1)") installed and in your [`PATH`](https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Variables.html#index-PATH "gnu.org &rightarrow; Bourne Shell Variables &rightarrow; PATH").
 
-For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") in version 1.x.x is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
+For parsing the scripts' command line, the [Shell Argparser](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") in version &geq;&#8239;1.2.0 and &lt;&#8239;2.0.0 is necessary. If you don't want to or can't introduce this non-standard dependency, you would need to modify the scripts to use other parsers, like [`getopt`](https://man7.org/linux/man-pages/man1/getopt.1.html "man7.org &rightarrow; man pages &rightarrow; getopt(1)").
 
 ### 2.3. Release and versioning policy
 
@@ -279,7 +280,7 @@ This includes `sed`'s output as normal Markdown, which is then interpreted by th
 
 <!-- <include command="sed 's/^#/####/' example.md" md-file="example.md"> -->
 <!-- License: Public Domain -->
-#### Include directive example
+#### 3.3.1. Include directive example
 
 <!-- <include command="printf '%s\n' "This line has been included.""> -->
 This line has been included.
