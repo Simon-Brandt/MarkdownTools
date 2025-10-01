@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-09-01
+# Last Modification: 2025-10-01
 
 # Usage:
 # bash include_file.sh [--help | --usage | --version] input_file
@@ -32,6 +32,8 @@ trap 'rm --force "${tmpfile}"' EXIT
 
 # Read and parse the arguments.
 declare in_file
+
+ARGPARSER_ALLOW_ARG_INTERMIXING=true
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(

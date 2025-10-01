@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-09-01
+# Last Modification: 2025-10-01
 
 # Warning: The script will stage all changes in the Markdown files.
 
@@ -45,22 +45,19 @@ for file in "${files[@]}"; do
 
     file="${dir}/${file}"
     bash create_toc.sh \
-        --in-place \
         --exclude-headings="Table of contents" \
-        --exclude-levels=1,4 \
-        -- \
+        --exclude-levels=1 \
+        --in-place \
         "${file}"
     bash include_file.sh "${file}"
     bash create_captions.sh "${file}"
     bash create_toc.sh \
-        --in-place \
         --exclude-headings="Table of contents" \
-        --exclude-levels=1,4 \
-        -- \
+        --exclude-levels=1 \
+        --in-place \
         "${file}"
     bash split_sections.sh \
         --to-headings \
-        -- \
         "${file}"
 
     git add '*.md'

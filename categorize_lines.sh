@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-09-01
+# Last Modification: 2025-10-01
 
 # Usage:
 # source categorize_lines.sh input_file
@@ -48,7 +48,6 @@ include_nestedness=0
 # would need to be done separately for the file which is about to be
 # included.  This prevents infinite regression, when file A includes
 # file B, and vice versa.
-
 
 mapfile -t lines < "${in_file}"
 for line in "${lines[@]}"; do

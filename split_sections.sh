@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-09-01
+# Last Modification: 2025-10-01
 
 # Usage:
 # bash split_sections.sh [--help | --usage | --version]
@@ -36,6 +36,8 @@ declare link_to_files
 declare link_to_headings
 declare remove_dirs
 declare remove_files
+
+ARGPARSER_ALLOW_ARG_INTERMIXING=true
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(

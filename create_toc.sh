@@ -20,7 +20,7 @@
 
 # Author: Simon Brandt
 # E-Mail: simon.brandt@uni-greifswald.de
-# Last Modification: 2025-09-01
+# Last Modification: 2025-10-01
 
 # Usage:
 # bash create_toc.sh [--help | --usage | --version]
@@ -43,6 +43,8 @@ declare -a toc_titles
 declare number_headings
 declare -a excluded_headings
 declare -a excluded_levels
+
+ARGPARSER_ALLOW_ARG_INTERMIXING=true
 
 # shellcheck disable=SC2190  # Indexed, not associative array.
 args=(
