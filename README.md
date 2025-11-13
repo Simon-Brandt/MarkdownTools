@@ -108,7 +108,7 @@ Since the Markdown Tools are rather loosely connected scripts serving different 
 
 Thus, the Markdown Tools use [calendar versioning (CalVer)](https://calver.org/ "calver.org") in the `YY.0M.MICRO` scheme, *i.e.*, the two-digit year, the zero-padded two-digit month, and a final integer starting from zero as micro version. The latter is necessary should more than one version be released in the same month.
 
-Note that *any* release might be breaking, there are *no* guarantees reagarding backwards compatibility. Therefore, changes will be released very soon after their implementation, after having confirmed them toi work correctly upon creating the [Shell Argparser's](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
+Note that *any* release might be breaking, there are *no* guarantees reagarding backwards compatibility. Therefore, changes will be released very soon after their implementation, after having confirmed them to work correctly upon creating the [Shell Argparser's](https://github.com/Simon-Brandt/ShellArgparser "github.com &rightarrow; Simon-Brandt &rightarrow; ShellArgparser") documentation.
 
 ### 2.4. License
 
@@ -202,7 +202,7 @@ To add captions, you need either of the following HTML comments:
 <!-- <table caption="Table caption"> -->
 ```
 
-without a closing tag. Instead, the next empty line delimits the caption. The first version includes a file and adds the caption to it, the second version adds the caption to the already existing table. The caption may end in a period or other punctuation mark. If it doesn't, the script adds a period by itself.
+without a closing tag. Instead, the next empty line delimits the caption (which means that you need a blank line after the tag if you don't have a caption, yet). The first version includes a file and adds the caption to it, the second version adds the caption to the already existing table. The caption may end in a period or other punctuation mark. If it doesn't, the script adds a period by itself.
 
 Then, run `create_captions.sh` on your Markdown file, which will create the captions. The inclusion is always in-place, so the command simply is:
 
